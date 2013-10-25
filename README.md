@@ -8,4 +8,4 @@ World Wide Maze Moving Model
 
 _ からはじまるやつはちょっとしたテスト。
 
-[メイキングブログはこつら。]http://mowwmmm.tumblr.com/()
+[メイキングブログはこつら。](http://mowwmmm.tumblr.com/)
