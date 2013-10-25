@@ -1,4 +1,4 @@
-WWMMM: World Wide Maze Moving Model
+World Wide Maze Moving Model
 =====
 
 
