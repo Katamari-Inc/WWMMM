@@ -4,7 +4,7 @@
 void testApp::setup() {
   ofSetLogLevel(OF_LOG_VERBOSE);
 //  serial_.listDevices();
-  serial_.setup("/dev/tty.usbmodem1411", 9600);
+  serial_.setup("/dev/tty.usbmodem1411", 57600);
   
   slider_.addListener(this, &testApp::sliderChanged);
   panel_.setup();
