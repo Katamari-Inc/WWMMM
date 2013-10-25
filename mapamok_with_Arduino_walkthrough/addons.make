@@ -1,0 +1,7 @@
+ofxAssimpModelLoader
+ofxOpenCv
+ofxXmlSettings
+ofxControlPanel
+ofxCv
+ofxMacamPs3Eye
+ofxSerialLink
