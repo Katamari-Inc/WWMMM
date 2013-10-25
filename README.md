@@ -8,4 +8,7 @@ World Wide Maze Moving Model
 
 _ からはじまるやつはちょっとしたテスト。
 
+- _SerialCommand: ofSerial で Arduino コントロールしてみるテスト。
+- _EnvMap: [ofxCubeMap](https://github.com/andreasmuller/ofxCubeMap) つかって環境マップしてみるテスト。
+
 [メイキングブログはこつら。](http://mowwmmm.tumblr.com/)
