@@ -10,5 +10,6 @@ _ からはじまるやつはちょっとしたテスト。
 
 - _SerialCommand: ofSerial で Arduino コントロールしてみるテスト。
 - _EnvMap: [ofxCubeMap](https://github.com/andreasmuller/ofxCubeMap) つかって環境マップしてみるテスト。
+- _Leaped2: Leap Motion でスチレンボードをコントロールするテスト。
 
 [メイキングブログはこつら。](http://mowwmmm.tumblr.com/)
