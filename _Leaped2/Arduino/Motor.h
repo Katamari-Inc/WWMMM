@@ -10,6 +10,7 @@ class Motor {
   void go(long position);
   void update();
   long position();
+  void halt();
 
   L6470 *stepper_;
   long destination_;

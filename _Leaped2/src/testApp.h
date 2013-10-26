@@ -33,11 +33,16 @@ class testApp : public ofBaseApp {
   void resetButtonPushed();
   
   void sendCommand(string command);
-  void setPosition(int index, int position);
+  void setPosition(int index, float millimeter);
   
+  bool is_ready_;
   ofSerial serial_;
   vector<Motor*> motors_;
+  
+  ofVec3f rot_;
+  ofMatrix4x4 mat_;
   float height_;
+  ofBoxPrimitive box_;
   
   ofxPanel panel_;
   ofxButton reset_button_;

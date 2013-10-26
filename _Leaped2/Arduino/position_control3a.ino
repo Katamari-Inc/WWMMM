@@ -6,6 +6,7 @@
 SerialCommand command_;
 Motor *motors_[NUM_MOTORS];
 
+bool halted = false;
 unsigned long t = 0;
 
 void setup() {
@@ -14,6 +15,7 @@ void setup() {
   command_.addCommand("ECHO", echo);
   command_.addCommand("P", setPosition);
   command_.addCommand("SETHOME", setHome);
+  command_.addCommand("HALT", haltAll);
   command_.setDefaultHandler(unrecognized);
 
   L6470::setup();
@@ -26,6 +28,8 @@ void setup() {
 }
 
 void loop() {
+  if (halted) return;
+
   command_.readSerial();
 
   for (int i = 0; i < NUM_MOTORS; i++) {
@@ -33,7 +37,7 @@ void loop() {
   }
 
   unsigned long now = millis();
-  if (now - t > 3000) {
+  if (now - t > 1000) {
     t = now;
     for (int i = 0; i < NUM_MOTORS; i++) {
       Serial.print("P ");
@@ -68,17 +72,19 @@ void setPosition() {
   long pos = atol(arg);
 
   motors_[id]->go(pos);
-
-  // Serial.print("SETP ");
-  // Serial.print(id);
-  // Serial.print(" ");
-  // Serial.println(pos);
 }
 
 void setHome() {
   for (int i = 0; i < NUM_MOTORS; i++) {
     motors_[i]->setAsHome();
   }
+}
+
+void haltAll() {
+  for (int i = 0; i < NUM_MOTORS; i++) {
+    motors_[i]->halt();
+  }
+  halted = true;
 }
 
 void unrecognized(const char *command) {
