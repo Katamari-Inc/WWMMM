@@ -1,0 +1,22 @@
+position (in world units):
+	x: -1.14
+	y: 33.57
+	z: 150.23
+axis-angle rotation (in degrees):
+	axis x: 0.70
+	axis y: 0.70
+	axis z: -0.08
+	angle: 170.69
+euler rotation (in degrees):
+	x: 76.62
+	y: 90.25
+	z: 89.96
+fov (in degrees):
+	horizontal: 37.59
+	vertical: 28.63
+principal point (in screen units):
+	x: 554.03
+	y: 91.39
+image size (in pixels):
+	x: 554.03
+	y: 91.39
