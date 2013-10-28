@@ -29,7 +29,14 @@ void testApp::setup() {
 	calibrationReady = false;
 	setupMesh();	
 	setupControlPanel();
-  motor_manager_.setup();
+
+  ofxXmlSettings settings;
+  string port = "";
+  if (settings.loadFile("settings.xml")) {
+    port = settings.getValue("port", "/dev/tty.usbmodem1421");
+    ofLog(OF_LOG_NOTICE, "Port: %s", port.c_str());
+  }
+  motor_manager_.setup(port);
 }
 
 void testApp::update() {

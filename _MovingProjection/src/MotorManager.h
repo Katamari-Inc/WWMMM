@@ -25,10 +25,10 @@ public:
   MotorManager() : height_(0.0f), roll_(0.0f), pitch_(0.0f), is_ready_(false) {
   }
   
-  void setup() {
+  void setup(string port) {
     buffer_[0] = NULL;
     serial_.listDevices();
-    serial_.setup("/dev/tty.usbmodem1411", 57600);
+    serial_.setup(port, 57600);
     
     motors_.push_back(new Motor());
     motors_.push_back(new Motor());
