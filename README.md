@@ -11,5 +11,8 @@ _ からはじまるやつはちょっとしたテスト。
 - _SerialCommand: ofSerial で Arduino コントロールしてみるテスト。
 - _EnvMap: [ofxCubeMap](https://github.com/andreasmuller/ofxCubeMap) つかって環境マップしてみるテスト。
 - _Leaped2: Leap Motion でスチレンボードをコントロールするテスト。
+- _SyncedStage: OSC で quaternion うけとって回転させるテスト。
+- _MovingProjection: mapamok でモーターと連動して動くオブジェクトにプロジェクションしてみるテスト。オブジェクトの回転は OSC でうけとれる。
+- _SendOrientation: _MovingProjection にダミーの回転データをおくりつけてみるテスト。
 
 [メイキングブログはこつら。](http://mowwmmm.tumblr.com/)
