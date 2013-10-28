@@ -1,0 +1,5 @@
+ofxAssimpModelLoader
+ofxGui
+ofxOsc
+ofxXmlSettings
+ofxLeapMotion

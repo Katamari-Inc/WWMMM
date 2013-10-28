@@ -39,6 +39,7 @@ void testApp::setup() {
   motor_manager_.setup(port);
   
   pitch_ = roll_ = 0;
+  osc_receiver_.setup(8001);
 }
 
 void testApp::update() {
@@ -57,6 +58,15 @@ void testApp::update() {
 		cam.disableMouseInput();
 	}
   
+  while (osc_receiver_.hasWaitingMessages()) {
+    ofxOscMessage message;
+    osc_receiver_.getNextMessage(&message);
+    if (message.getAddress() == "/world/orientation") {
+      ofQuaternion q;
+      q.set(message.getArgAsFloat(0), message.getArgAsFloat(1), message.getArgAsFloat(2), message.getArgAsFloat(3));
+      motor_manager_.setOrientation(q);
+    }
+  }
   motor_manager_.update();
 }
 

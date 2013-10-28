@@ -5,6 +5,7 @@
 #include "ofxAssimpModelLoader.h"
 #include "ofxProCamToolkit.h"
 #include "ofxAutoControlPanel.h"
+#include "ofxOsc.h"
 #include "LineArt.h"
 #include "pystring.h"
 #include "MotorManager.h"
@@ -67,4 +68,6 @@ public:
     qp *= qr;
     motor_manager_.setOrientation(qp);
   }
+  
+  ofxOscReceiver osc_receiver_;
 };
