@@ -57,4 +57,14 @@ public:
 	ofShader shader;
   
   MotorManager motor_manager_;
+  float pitch_;
+  float roll_;
+  
+  void applyOrientation() {
+    ofQuaternion qp, qr;
+    qp.makeRotate(pitch_, 1, 0, 0);
+    qr.makeRotate(roll_, 0, 0, 1);
+    qp *= qr;
+    motor_manager_.setOrientation(qp);
+  }
 };

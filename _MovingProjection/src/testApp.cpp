@@ -37,6 +37,8 @@ void testApp::setup() {
     ofLog(OF_LOG_NOTICE, "Port: %s", port.c_str());
   }
   motor_manager_.setup(port);
+  
+  pitch_ = roll_ = 0;
 }
 
 void testApp::update() {
@@ -129,16 +131,20 @@ void testApp::keyPressed(int key) {
         motor_manager_.setHeight(motor_manager_.getHeight() - 1);
         break;
       case 'n':
-        motor_manager_.roll(1);
+        roll_ -= 1;
+        applyOrientation();
         break;
       case 'h':
-        motor_manager_.roll(-1);
+        roll_ += 1;
+        applyOrientation();
         break;
       case 'c':
-        motor_manager_.pitch(1);
+        pitch_ -= 1;
+        applyOrientation();
         break;
       case 't':
-        motor_manager_.pitch(-1);
+        pitch_ += 1;
+        applyOrientation();
         break;
     }
   }
@@ -185,6 +191,7 @@ void testApp::keyPressed(int key) {
       break;
     case 'a':
       motor_manager_.reset();
+      roll_ = pitch_ = 0;
       break;
   }
 }
@@ -202,7 +209,7 @@ void testApp::mouseReleased(int x, int y, int button) {
 }
 
 void testApp::setupMesh() {
-	model.loadModel("model.dae");
+	model.loadModel("model.obj");
 	objectMesh = model.getMesh(0);
 	int n = objectMesh.getNumVertices();
 	objectPoints.resize(n);
@@ -215,9 +222,9 @@ void testApp::setupMesh() {
 
 void testApp::render() {
   ofPushMatrix();
-  ofTranslate(0, 0, motor_manager_.getHeight() / 10.f);
-  ofRotateX(-motor_manager_.pitch_);
-  ofRotateY(motor_manager_.roll_);
+  ofTranslate(0, motor_manager_.getHeight() / 10.f, 0);
+  ofMatrix4x4 m(motor_manager_.orientation_);
+  ofMultMatrix(m);
   
   ofDrawAxis(10);
   
@@ -374,6 +381,7 @@ void testApp::loadCalibration() {
     
     string calibPath;
     ofFileDialogResult result = ofSystemLoadDialog("Select a calibration folder", true, ofToDataPath("", true));
+    if (!result.bSuccess) return;
     calibPath = result.getPath();
     
     // load objectPoints and imagePoints

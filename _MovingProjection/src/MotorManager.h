@@ -22,7 +22,7 @@ public:
 
 class MotorManager {
 public:
-  MotorManager() : height_(0.0f), roll_(0.0f), pitch_(0.0f), is_ready_(false) {
+  MotorManager() : height_(0.0f), is_ready_(false) {
   }
   
   void setup(string port) {
@@ -41,7 +41,7 @@ public:
       if (c == '\n') {
         vector<string> tokens;
         pystring::split(string((char *)buffer_), tokens);
-        if (tokens[0] == "P") {
+        if (tokens.size() && tokens[0] == "P") {
           int id;
           istringstream(tokens[1]) >> id;
           int pos;
@@ -91,40 +91,29 @@ public:
     setPosition(motor_id, motors_[motor_id]->destination + amount);
   }
   
-  void roll(float degree) {
-    roll_ = ofClamp(roll_ + degree, -20, 20);
-    sync();
-  }
-  
-  void pitch(float degree) {
-    pitch_ = ofClamp(pitch_ + degree, -20, 20);
+  void setOrientation(ofQuaternion &q) {
+    orientation_ = q;
     sync();
   }
   
   void sync() {
-    mat_.makeRotationMatrix(roll_, 0, 0, 1);
-    mat_.postMultRotate(pitch_, 1, 0, 0);
-    ofVec3f p = mat_ * ofVec3f(225, 0, 190);
+    ofVec3f p = orientation_ * ofVec3f(225, 0, 190);
     setPosition(1, p.y + height_);
-    p = mat_ * ofVec3f(-225, 0, 190);
+    p = orientation_ * ofVec3f(-225, 0, 190);
     setPosition(2, p.y + height_);
-    p = mat_ * ofVec3f(0, 0, -190);
+    p = orientation_ * ofVec3f(0, 0, -190);
     setPosition(0, p.y + height_);
   }
   
   void initOrigin() {
     height_ = 0;
-    roll_ = 0;
-    pitch_ = 0;
-    mat_.makeIdentityMatrix();
+    orientation_.set(0, 0, 0, 1);
     sendCommand("SETHOME");
   }
   
   void reset() {
     height_ = 0;
-    roll_ = 0;
-    pitch_ = 0;
-    mat_.makeIdentityMatrix();
+    orientation_.set(0, 0, 0, 1);
     sync();
   }
   
@@ -136,8 +125,6 @@ public:
   
   vector<Motor*> motors_;
   
-  ofMatrix4x4 mat_;
+  ofQuaternion orientation_;
   float height_;
-  float roll_;
-  float pitch_;
 };

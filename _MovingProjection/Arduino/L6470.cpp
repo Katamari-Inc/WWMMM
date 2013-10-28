@@ -86,6 +86,7 @@ void L6470::init(){
 	
 	// First things first: let's check communications. The CONFIG register should
 	//  power up to 0x2E88, so we can use that to check the communications.
+	delay(1000);
 	unsigned long p = 0;
 	while (1) {
 		p = GetParam(CONFIG);
