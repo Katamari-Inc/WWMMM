@@ -314,7 +314,7 @@ void testApp::loadCalibration() {
     cv::Point3f oP;
     
     const float* objVals = objPointsMat.ptr<float>(0);
-    numVals = objPointsMat.cols * objPointsMat.rows;
+    numVals = objPointsMat.cols * objPointsMat.rows * 3;
     
     for(int i = 0; i < numVals; i+=3) {
         oP.x = objVals[i];
@@ -325,11 +325,10 @@ void testApp::loadCalibration() {
     
     cv::Point2f iP;
     
-    referencePoints.resize( (imgPointsMat.cols * imgPointsMat.rows ) / 2, false);
+    referencePoints.resize(imgPointsMat.cols * imgPointsMat.rows, false);
     
     const float* imgVals = imgPointsMat.ptr<float>(0);
-    numVals = objPointsMat.cols * objPointsMat.rows;
-    
+    numVals = objPointsMat.cols * objPointsMat.rows * 2;
     for(int i = 0; i < numVals; i+=2) {
         iP.x = imgVals[i];
         iP.y = imgVals[i+1];
