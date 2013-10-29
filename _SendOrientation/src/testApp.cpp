@@ -3,7 +3,8 @@
 //--------------------------------------------------------------
 void testApp::setup() {
   ofSetLogLevel(OF_LOG_VERBOSE);
-  sender_.setup("192.168.4.44", 8001);
+  sender_.setup("127.0.0.1", 8001);
+//  sender_.setup("192.168.4.44", 8001);
   box_.set(330, 10, 500);
 }
 
