@@ -5,31 +5,39 @@ using namespace ofxCv;
 using namespace cv;
 
 
-void testApp::setb(string name, bool value) {
+inline void testApp::setb(string name, bool value) {
 	panel.setValueB(name, value);
 }
-void testApp::seti(string name, int value) {
+inline void testApp::seti(string name, int value) {
 	panel.setValueI(name, value);
 }
-void testApp::setf(string name, float value) {
+inline void testApp::setf(string name, float value) {
 	panel.setValueF(name, value);
 }
-bool testApp::getb(string name) {
+inline bool testApp::getb(string name) {
 	return panel.getValueB(name);
 }
-int testApp::geti(string name) {
+inline int testApp::geti(string name) {
 	return panel.getValueI(name);
 }
-float testApp::getf(string name) {
+inline float testApp::getf(string name) {
 	return panel.getValueF(name);
 }
 
 
 void testApp::setup() {
+    ofSetLogLevel(OF_LOG_VERBOSE);
     ofSetDrawBitmapMode(OF_BITMAPMODE_MODEL_BILLBOARD);
     ofSetVerticalSync(true);
-    ofSetFullscreen(true);
-    calibrationReady = false;
+//    ofSetFullscreen(true);
+    ofSetEscapeQuitsApp(false);
+    
+    selected_mesh_ = -1;
+    selected_point_ = -1;
+    hovering_mesh_ = -1;
+    hovering_point_ = -1;
+    
+    calibration_ready_ = false;
     setupMesh();
     setupControlPanel();
     
@@ -48,15 +56,15 @@ void testApp::setup() {
 
 void testApp::update() {
 	ofSetWindowTitle("mapamok");
-	if(getb("randomLighting")) {
+	if (getb("randomLighting")) {
 		setf("lightX", ofSignedNoise(ofGetElapsedTimef(), 1, 1) * 1000);
 		setf("lightY", ofSignedNoise(1, ofGetElapsedTimef(), 1) * 1000);
 		setf("lightZ", ofSignedNoise(1, 1, ofGetElapsedTimef()) * 1000);
 	}
-	light.setPosition(getf("lightX"), getf("lightY"), getf("lightZ"));
+//	light_.setPosition(getf("lightX"), getf("lightY"), getf("lightZ"));
     
-	if(getb("selectionMode")) {
-		camera_.enableMouseInput();
+	if (getb("selectionMode")) {
+        camera_.enableMouseInput();
 	} else {
 		updateRenderMode();
 		camera_.disableMouseInput();
@@ -77,20 +85,20 @@ void testApp::update() {
 
 void testApp::draw() {
 	ofBackground(geti("backgroundColor"));
-    if(getb("loadCalibration")) {
+    if (getb("loadCalibration")) {
 		loadCalibration();
 		setb("loadCalibration", false);
 	}
-	if(getb("saveCalibration")) {
+	if (getb("saveCalibration")) {
 		saveCalibration();
 		setb("saveCalibration", false);
 	}
-	if(getb("selectionMode")) {
+	if (getb("selectionMode")) {
 		drawSelectionMode();
 	} else {
 		drawRenderMode();
 	}
-	if(!getb("validShader")) {
+	if (!getb("validShader")) {
 		ofPushStyle();
 		ofSetColor(magentaPrint);
 		ofSetLineWidth(8);
@@ -108,17 +116,17 @@ void testApp::draw() {
 
 
 void testApp::keyPressed(int key) {
-    if (getb("selectionMode") || getb("selected")) {
-        if(key == OF_KEY_LEFT || key == OF_KEY_UP || key == OF_KEY_RIGHT|| key == OF_KEY_DOWN){
-            int choice = geti("selectionChoice");
+    if (getb("selectionMode") || selected_point_ >= 0) {
+        if (key == OF_KEY_LEFT || key == OF_KEY_UP || key == OF_KEY_RIGHT|| key == OF_KEY_DOWN){
+//            int choice = geti("selectionChoice");
             setb("arrowing", true);
-            if(choice > 0){
-                Point2f& cur = imagePoints[choice];
+            if (selected_point_ >= 0){
+                Point2f &p = selectedPoint().image;
                 switch(key) {
-                    case OF_KEY_LEFT: cur.x -= 1; break;
-                    case OF_KEY_RIGHT: cur.x += 1; break;
-                    case OF_KEY_UP: cur.y -= 1; break;
-                    case OF_KEY_DOWN: cur.y += 1; break;
+                    case OF_KEY_LEFT: p.x -= 1; break;
+                    case OF_KEY_RIGHT: p.x += 1; break;
+                    case OF_KEY_UP: p.y -= 1; break;
+                    case OF_KEY_DOWN: p.y += 1; break;
                 }
             }
         } else {
@@ -154,20 +162,31 @@ void testApp::keyPressed(int key) {
     
     switch (key) {
         case OF_KEY_BACKSPACE: // delete selected
-            if(getb("selected")) {
-                setb("selected", false);
-                int choice = geti("selectionChoice");
-                referencePoints[choice] = false;
-                imagePoints[choice] = Point2f();
+            if (selected_point_ >= 0) {
+                selectedPoint().enabled = false;
+                selectedPoint().image = Point2f();
+                selected_mesh_ = -1;
+                selected_point_ = -1;
+//            if (getb("selected")) {
+//                setb("selected", false);
+//                int choice = geti("selectionChoice");
+//                reference_points_[choice] = false;
+//                image_points_[choice] = Point2f();
             }
             break;
             
         case '\n': // deselect
-            setb("selected", false);
+//            setb("selected", false);
+            selected_mesh_ = -1;
+            selected_point_ = -1;
             break;
             
         case ' ': // toggle render/select mode
             setb("selectionMode", !getb("selectionMode"));
+            break;
+            
+        case 'f':
+            ofToggleFullscreen();
             break;
             
         case '1':
@@ -199,12 +218,33 @@ void testApp::keyPressed(int key) {
 }
 
 
+void testApp::mouseMoved(int x, int y) {
+    if (getb("selectionMode")) {
+        float distance = getClosestPointOnMeshes(x, y, hovering_mesh_, hovering_point_);
+        if (distance < getf("selectionRadius")) {
+            //        seti("hoverChoice", choice);
+            setb("hoverSelected", true);
+            //        drawLabeledPoint(choice, selected, magentaPrint);
+        } else {
+            hovering_mesh_ = -1;
+            hovering_point_ = -1;
+            setb("hoverSelected", false);
+        }
+    }
+}
+
+
 void testApp::mousePressed(int x, int y, int button) {
-	setb("selected", getb("hoverSelected"));
-	seti("selectionChoice", geti("hoverChoice"));
-	if(getb("selected")) {
+//	setb("selected", getb("hoverSelected"));
+//	seti("selectionChoice", geti("hoverChoice"));
+	if (hovering_point_ >= 0) {
+        selected_mesh_ = hovering_mesh_;
+        selected_point_ = hovering_point_;
 		setb("dragging", true);
-	}
+	} else {
+        selected_mesh_ = -1;
+        selected_point_ = -1;
+    }
 }
 
 
@@ -214,15 +254,13 @@ void testApp::mouseReleased(int x, int y, int button) {
 
 
 void testApp::setupMesh() {
-	model.loadModel("model.obj");
-	objectMesh = model.getMesh(0);
-	int n = objectMesh.getNumVertices();
-	objectPoints.resize(n);
-	imagePoints.resize(n);
-	referencePoints.resize(n, false);
-	for(int i = 0; i < n; i++) {
-		objectPoints[i] = toCv(objectMesh.getVertex(i));
-	}
+	if (!model_.loadModel("model.obj")) {
+        ofExit(-1);
+    }
+    for (int i = 0; i < model_.getNumMeshes(); i++) {
+        ofMesh m = model_.getMesh(i);
+        calibration_meshes_.push_back(new CalibrationMesh(m));
+    }
 }
 
 
@@ -236,77 +274,89 @@ void testApp::render() {
     
 	ofPushStyle();
 	ofSetLineWidth(geti("lineWidth"));
-	if(getb("useSmoothing")) {
+	if (getb("useSmoothing")) {
 		ofEnableSmoothing();
 	} else {
 		ofDisableSmoothing();
 	}
 	int shading = geti("shading");
-	bool useLights = shading == 1;
-	bool useShader = shading == 2;
-	if(useLights) {
-		light.enable();
-		ofEnableLighting();
-		glShadeModel(GL_SMOOTH);
-		glEnable(GL_NORMALIZE);
-	}
+//	bool useLights = shading == 1;
+//	bool useShader = shading == 2;
+//	if (useLights) {
+//		light_.enable();
+//		ofEnableLighting();
+//		glShadeModel(GL_SMOOTH);
+//		glEnable(GL_NORMALIZE);
+//	}
 	
-	if(getb("highlight")) {
-		objectMesh.clearColors();
-		int n = objectMesh.getNumVertices();
-		float highlightPosition = getf("highlightPosition");
-		float highlightOffset = getf("highlightOffset");
-		for(int i = 0; i < n; i++) {
-			int lower = ofMap(highlightPosition - highlightOffset, 0, 1, 0, n);
-			int upper = ofMap(highlightPosition + highlightOffset, 0, 1, 0, n);
-			ofColor cur = (lower < i && i < upper) ? ofColor::white : ofColor::black;
-			objectMesh.addColor(cur);
-		}
-	}
+//	if (getb("highlight")) {
+//		object_mesh_.clearColors();
+//		int n = object_mesh_.getNumVertices();
+//		float highlightPosition = getf("highlightPosition");
+//		float highlightOffset = getf("highlightOffset");
+//		for (int i = 0; i < n; i++) {
+//			int lower = ofMap(highlightPosition - highlightOffset, 0, 1, 0, n);
+//			int upper = ofMap(highlightPosition + highlightOffset, 0, 1, 0, n);
+//			ofColor cur = (lower < i && i < upper) ? ofColor::white : ofColor::black;
+//			object_mesh_.addColor(cur);
+//		}
+//	}
 	
 	ofSetColor(255);
 	glPushAttrib(GL_ALL_ATTRIB_BITS);
 	glEnable(GL_DEPTH_TEST);
-	if(useShader) {
-		ofFile fragFile("shader.frag"), vertFile("shader.vert");
-		Poco::Timestamp fragTimestamp = fragFile.getPocoFile().getLastModified();
-		Poco::Timestamp vertTimestamp = vertFile.getPocoFile().getLastModified();
-		if(fragTimestamp != lastFragTimestamp || vertTimestamp != lastVertTimestamp) {
-			bool validShader = shader.load("shader");
-			setb("validShader", validShader);
-		}
-		lastFragTimestamp = fragTimestamp;
-		lastVertTimestamp = vertTimestamp;
-		
-		shader.begin();
-		shader.setUniform1f("elapsedTime", ofGetElapsedTimef());
-		shader.end();
-	}
+//	if (useShader) {
+//		ofFile fragFile("shader.frag"), vertFile("shader.vert");
+//		Poco::Timestamp fragTimestamp = fragFile.getPocoFile().getLastModified();
+//		Poco::Timestamp vertTimestamp = vertFile.getPocoFile().getLastModified();
+//		if (fragTimestamp != lastFragTimestamp || vertTimestamp != lastVertTimestamp) {
+//			bool validShader = shader.load("shader");
+//			setb("validShader", validShader);
+//		}
+//		lastFragTimestamp = fragTimestamp;
+//		lastVertTimestamp = vertTimestamp;
+//		
+//		shader.begin();
+//		shader.setUniform1f("elapsedTime", ofGetElapsedTimef());
+//		shader.end();
+//	}
 	ofColor transparentBlack(0, 0, 0, 0);
 	switch(geti("drawMode")) {
 		case 0: // faces
-			if(useShader) shader.begin();
+//			if (useShader) shader.begin();
 			glEnable(GL_CULL_FACE);
 			glCullFace(GL_BACK);
-			objectMesh.drawFaces();
-			if(useShader) shader.end();
+            for (int i = 0; i < calibration_meshes_.size(); i++) {
+                calibration_meshes_[i]->object_mesh.drawFaces();
+            }
+//			object_mesh_.drawFaces();
+//			if (useShader) shader.end();
 			break;
 		case 1: // fullWireframe
-			if(useShader) shader.begin();
-			objectMesh.drawWireframe();
-			if(useShader) shader.end();
+//			if (useShader) shader.begin();
+            for (int i = 0; i < calibration_meshes_.size(); i++) {
+                calibration_meshes_[i]->object_mesh.drawFaces();
+            }
+//			object_mesh_.drawWireframe();
+//			if (useShader) shader.end();
 			break;
 		case 2: // outlineWireframe
-			LineArt::draw(objectMesh, true, transparentBlack, useShader ? &shader : NULL);
+//			LineArt::draw(object_mesh_, true, transparentBlack, useShader ? &shader : NULL);
+            for (int i = 0; i < calibration_meshes_.size(); i++) {
+                LineArt::draw(calibration_meshes_[i]->object_mesh, true, transparentBlack, NULL);
+            }
 			break;
 		case 3: // occludedWireframe
-			LineArt::draw(objectMesh, false, transparentBlack, useShader ? &shader : NULL);
+//			LineArt::draw(object_mesh_, false, transparentBlack, useShader ? &shader : NULL);
+            for (int i = 0; i < calibration_meshes_.size(); i++) {
+                LineArt::draw(calibration_meshes_[i]->object_mesh, false, transparentBlack, NULL);
+            }
 			break;
 	}
 	glPopAttrib();
-	if(useLights) {
-		ofDisableLighting();
-	}
+//	if (useLights) {
+//		ofDisableLighting();
+//	}
 	ofPopStyle();
     ofPopMatrix();
 }
@@ -319,31 +369,31 @@ void testApp::saveCalibration() {
 	
 	FileStorage fs(ofToDataPath(dirName + "calibration-advanced.yml"), FileStorage::WRITE);
 	
-	Mat cameraMatrix = intrinsics.getCameraMatrix();
+	Mat cameraMatrix = intrinsics_.getCameraMatrix();
 	fs << "cameraMatrix" << cameraMatrix;
 	
-	double focalLength = intrinsics.getFocalLength();
+	double focalLength = intrinsics_.getFocalLength();
 	fs << "focalLength" << focalLength;
 	
-	Point2d fov = intrinsics.getFov();
+	Point2d fov = intrinsics_.getFov();
 	fs << "fov" << fov;
 	
-	Point2d principalPoint = intrinsics.getPrincipalPoint();
+	Point2d principalPoint = intrinsics_.getPrincipalPoint();
 	fs << "principalPoint" << principalPoint;
 	
-	cv::Size imageSize = intrinsics.getImageSize();
+	cv::Size imageSize = intrinsics_.getImageSize();
 	fs << "imageSize" << imageSize;
 	
-	fs << "translationVector" << tvec;
-	fs << "rotationVector" << rvec;
+	fs << "translationVector" << translation_vector_;
+	fs << "rotationVector" << rotation_vector_;
     
 	Mat rotationMatrix;
-	Rodrigues(rvec, rotationMatrix);
+	Rodrigues(rotation_vector_, rotationMatrix);
 	fs << "rotationMatrix" << rotationMatrix;
 	
-	double rotationAngleRadians = norm(rvec, NORM_L2);
+	double rotationAngleRadians = norm(rotation_vector_, NORM_L2);
 	double rotationAngleDegrees = ofRadToDeg(rotationAngleRadians);
-	Mat rotationAxis = rvec / rotationAngleRadians;
+	Mat rotationAxis = rotation_vector_ / rotationAngleRadians;
 	fs << "rotationAngleRadians" << rotationAngleRadians;
 	fs << "rotationAngleDegrees" << rotationAngleDegrees;
 	fs << "rotationAxis" << rotationAxis;
@@ -354,11 +404,11 @@ void testApp::saveCalibration() {
 	fs << "euler" << eulerMat;
 	
 	ofFile basic("calibration-basic.txt", ofFile::WriteOnly);
-	ofVec3f position( tvec.at<double>(1), tvec.at<double>(2));
+	ofVec3f position( translation_vector_.at<double>(1), translation_vector_.at<double>(2));
 	basic << "position (in world units):" << endl;
-	basic << "\tx: " << ofToString(tvec.at<double>(0), 2) << endl;
-	basic << "\ty: " << ofToString(tvec.at<double>(1), 2) << endl;
-	basic << "\tz: " << ofToString(tvec.at<double>(2), 2) << endl;
+	basic << "\tx: " << ofToString(translation_vector_.at<double>(0), 2) << endl;
+	basic << "\ty: " << ofToString(translation_vector_.at<double>(1), 2) << endl;
+	basic << "\tz: " << ofToString(translation_vector_.at<double>(2), 2) << endl;
 	basic << "axis-angle rotation (in degrees):" << endl;
 	basic << "\taxis x: " << ofToString(axis.x, 2) << endl;
 	basic << "\taxis y: " << ofToString(axis.y, 2) << endl;
@@ -378,72 +428,71 @@ void testApp::saveCalibration() {
 	basic << "\tx: " << ofToString(principalPoint.x, 2) << endl;
 	basic << "\ty: " << ofToString(principalPoint.y, 2) << endl;
 	
-	saveMat(Mat(objectPoints), dirName + "objectPoints.yml");
-	saveMat(Mat(imagePoints), dirName + "imagePoints.yml");
+//	saveMat(Mat(object_points_), dirName + "objectPoints.yml");
+//	saveMat(Mat(image_points_), dirName + "imagePoints.yml");
 }
 
 
 void testApp::loadCalibration() {
-    
-    // retrieve advanced calibration folder
-    
-    string calibPath;
-    ofFileDialogResult result = ofSystemLoadDialog("Select a calibration folder", true, ofToDataPath("", true));
-    if (!result.bSuccess) return;
-    calibPath = result.getPath();
-    
-    // load objectPoints and imagePoints
-    
-    Mat objPointsMat, imgPointsMat;
-    loadMat( objPointsMat, calibPath + "/objectPoints.yml");
-    loadMat( imgPointsMat, calibPath + "/imagePoints.yml");
-    
-    int numVals;
-    float x, y, z;
-    cv::Point3f oP;
-    
-    const float* objVals = objPointsMat.ptr<float>(0);
-    numVals = objPointsMat.cols * objPointsMat.rows * 3;
-    
-    for(int i = 0; i < numVals; i+=3) {
-        oP.x = objVals[i];
-        oP.y = objVals[i+1];
-        oP.z = objVals[i+2];
-        objectPoints[i/3] = oP;
-    }
-    
-    cv::Point2f iP;
-    
-    referencePoints.resize(imgPointsMat.cols * imgPointsMat.rows, false);
-    
-    const float* imgVals = imgPointsMat.ptr<float>(0);
-    numVals = objPointsMat.cols * objPointsMat.rows * 2;
-    for(int i = 0; i < numVals; i+=2) {
-        iP.x = imgVals[i];
-        iP.y = imgVals[i+1];
-        if(iP.x != 0 && iP.y != 0) {
-            referencePoints[i/2] = true;
-        }
-        imagePoints[i/2] = iP;
-    }
-    
-    
-    // load the calibration-advanced yml
-    
-    FileStorage fs(ofToDataPath(calibPath + "/calibration-advanced.yml", true), FileStorage::READ);
-    
-    Mat cameraMatrix;
-    Size2i imageSize;
-    fs["cameraMatrix"] >> cameraMatrix;
-    fs["imageSize"][0] >> imageSize.width;
-    fs["imageSize"][1] >> imageSize.height;
-    fs["rotationVector"] >> rvec;
-    fs["translationVector"] >> tvec;
-    
-    intrinsics.setup(cameraMatrix, imageSize);
-    modelMatrix = makeMatrix(rvec, tvec);
-    
-    calibrationReady = true;
+//    
+//    // retrieve advanced calibration folder
+//    
+//    ofFileDialogResult result = ofSystemLoadDialog("Select a calibration folder", true, ofToDataPath("", true));
+//    if (!result.bSuccess) return;
+//    string data_dir = result.getPath();
+//    
+//    // load objectPoints and imagePoints
+//    
+//    Mat objPointsMat, imgPointsMat;
+//    loadMat( objPointsMat, data_dir + "/objectPoints.yml");
+//    loadMat( imgPointsMat, data_dir + "/imagePoints.yml");
+//    
+//    int numVals;
+//    float x, y, z;
+//    cv::Point3f oP;
+//    
+//    const float* objVals = objPointsMat.ptr<float>(0);
+//    numVals = objPointsMat.cols * objPointsMat.rows * 3;
+//    
+//    for (int i = 0; i < numVals; i+=3) {
+//        oP.x = objVals[i];
+//        oP.y = objVals[i+1];
+//        oP.z = objVals[i+2];
+//        object_points_[i/3] = oP;
+//    }
+//    
+//    cv::Point2f iP;
+//    
+//    reference_points_.resize(imgPointsMat.cols * imgPointsMat.rows, false);
+//    
+//    const float* imgVals = imgPointsMat.ptr<float>(0);
+//    numVals = objPointsMat.cols * objPointsMat.rows * 2;
+//    for (int i = 0; i < numVals; i+=2) {
+//        iP.x = imgVals[i];
+//        iP.y = imgVals[i+1];
+//        if (iP.x != 0 && iP.y != 0) {
+//            reference_points_[i/2] = true;
+//        }
+//        image_points_[i/2] = iP;
+//    }
+//    
+//    
+//    // load the calibration-advanced yml
+//    
+//    FileStorage fs(ofToDataPath(data_dir + "/calibration-advanced.yml", true), FileStorage::READ);
+//    
+//    Mat cameraMatrix;
+//    Size2i imageSize;
+//    fs["cameraMatrix"] >> cameraMatrix;
+//    fs["imageSize"][0] >> imageSize.width;
+//    fs["imageSize"][1] >> imageSize.height;
+//    fs["rotationVector"] >> rotation_vector_;
+//    fs["translationVector"] >> translation_vector_;
+//    
+//    intrinsics_.setup(cameraMatrix, imageSize);
+//    model_matrix_ = makeMatrix(rotation_vector_, translation_vector_);
+//    
+//    calibration_ready_ = true;
 }
 
 
@@ -501,11 +550,11 @@ void testApp::setupControlPanel() {
 	panel.addToggle("validShader", "validShader", true);
 	panel.addToggle("selectionMode", "selectionMode", true);
 	panel.addToggle("hoverSelected", "hoverSelected", false);
-	panel.addSlider("hoverChoice", "hoverChoice", 0, 0, objectPoints.size(), true);
+//	panel.addSlider("hoverChoice", "hoverChoice", 0, 0, object_points_.size(), true);
 	panel.addToggle("selected", "selected", false);
 	panel.addToggle("dragging", "dragging", false);
 	panel.addToggle("arrowing", "arrowing", false);
-	panel.addSlider("selectionChoice", "selectionChoice", 0, 0, objectPoints.size(), true);
+//	panel.addSlider("selectionChoice", "selectionChoice", 0, 0, object_points_.size(), true);
 	panel.addSlider("slowLerpRate", "slowLerpRate", .001, 0, .01);
 	panel.addSlider("fastLerpRate", "fastLerpRate", 1, 0, 1);
 }
@@ -514,13 +563,13 @@ void testApp::setupControlPanel() {
 void testApp::updateRenderMode() {
 	// generate camera matrix given aov guess
 	float aov = getf("aov");
-	Size2i imageSize(ofGetWidth(), ofGetHeight());
-	float f = imageSize.width * ofDegToRad(aov); // i think this is wrong, but it's optimized out anyway
-	Point2f c = Point2f(imageSize) * (1. / 2);
-	Mat1d cameraMatrix = (Mat1d(3, 3) <<
-                          f, 0, c.x,
-                          0, f, c.y,
-                          0, 0, 1);
+	Size2i image_size(ofGetWidth(), ofGetHeight());
+	float f = image_size.width * ofDegToRad(aov); // i think this is wrong, but it's optimized out anyway
+	Point2f c = Point2f(image_size) * (1. / 2);
+	Mat1d camera_matrix = (Mat1d(3, 3) <<
+                           f, 0, c.x,
+                           0, f, c.y,
+                           0, 0, 1);
     
 	// generate flags
 #define getFlag(flag) (panel.getValueB((#flag)) ? flag : 0)
@@ -533,27 +582,31 @@ void testApp::updateRenderMode() {
     getFlag(CV_CALIB_FIX_K3) |
     getFlag(CV_CALIB_ZERO_TANGENT_DIST);
 	
-	vector<Mat> rvecs, tvecs;
-	Mat distCoeffs;
-	vector<vector<Point3f> > referenceObjectPoints(1);
-	vector<vector<Point2f> > referenceImagePoints(1);
-	int n = referencePoints.size();
-	for(int i = 0; i < n; i++) {
-		if(referencePoints[i]) {
-			referenceObjectPoints[0].push_back(objectPoints[i]);
-			referenceImagePoints[0].push_back(imagePoints[i]);
-		}
-	}
-	const static int minPoints = 6;
-	if(referenceObjectPoints[0].size() >= minPoints) {
-		calibrateCamera(referenceObjectPoints, referenceImagePoints, imageSize, cameraMatrix, distCoeffs, rvecs, tvecs, flags);
-		rvec = rvecs[0];
-		tvec = tvecs[0];
-		intrinsics.setup(cameraMatrix, imageSize);
-		modelMatrix = makeMatrix(rvec, tvec);
-		calibrationReady = true;
+	vector<vector<Point3f> > reference_object_points(1);
+	vector<vector<Point2f> > reference_image_points(1);
+    for (int j = 0; j < calibration_meshes_.size(); j++) {
+        CalibrationMesh *m = calibration_meshes_[j];
+        int n = m->points.size();
+        for (int i = 0; i < n; i++) {
+            CalibrationPoint &p = m->points[i];
+            if (p.enabled) {
+                reference_object_points[0].push_back(p.object);
+                reference_image_points[0].push_back(p.image);
+            }
+        }
+    }
+	const static int min_points = 6;
+	if (reference_object_points[0].size() >= min_points) {
+        vector<Mat> rvecs, tvecs;
+        Mat distCoeffs;
+		calibrateCamera(reference_object_points, reference_image_points, image_size, camera_matrix, distCoeffs, rvecs, tvecs, flags);
+		rotation_vector_ = rvecs[0];
+		translation_vector_ = tvecs[0];
+		intrinsics_.setup(camera_matrix, image_size);
+		model_matrix_ = makeMatrix(rotation_vector_, translation_vector_);
+		calibration_ready_ = true;
 	} else {
-		calibrationReady = false;
+		calibration_ready_ = false;
 	}
 }
 
@@ -584,46 +637,59 @@ void testApp::drawSelectionMode() {
         
         render();
         
-        if(getb("setupMode")) {
-            imageMesh = getProjectedMesh(objectMesh);
+        if (getb("setupMode")) {
+            for (int i = 0; i < calibration_meshes_.size(); i++) {
+                calibration_meshes_[i]->projected_mesh = getProjectedMesh(calibration_meshes_[i]->object_mesh);
+            }
         }
     }
     camera_.end();
     
-    if(getb("setupMode")) {
+    if (getb("setupMode")) {
         // draw all points cyan small
         glPointSize(geti("screenPointSize"));
         glEnable(GL_POINT_SMOOTH);
         ofSetColor(cyanPrint);
-        imageMesh.drawVertices();
+        for (int i = 0; i < calibration_meshes_.size(); i++) {
+            calibration_meshes_[i]->projected_mesh.drawVertices();
+        }
         
         // draw all reference points cyan
-        int n = referencePoints.size();
-        for(int i = 0; i < n; i++) {
-            if(referencePoints[i]) {
-                drawLabeledPoint(i, imageMesh.getVertex(i), cyanPrint);
+        for (int j = 0; j < calibration_meshes_.size(); j++) {
+            CalibrationMesh *m = calibration_meshes_[j];
+            int n = m->points.size();
+            for (int i = 0; i < n; i++) {
+                if (m->points[i].enabled) {
+                    drawLabeledPoint(i, m->projected_mesh.getVertex(i), cyanPrint);
+                }
             }
         }
         
         // check to see if anything is selected
         // draw hover point magenta
-        int choice;
-        float distance;
-        ofVec3f selected = getClosestPointOnMesh(imageMesh, mouseX, mouseY, &choice, &distance);
-        if(!ofGetMousePressed() && distance < getf("selectionRadius")) {
-            seti("hoverChoice", choice);
-            setb("hoverSelected", true);
-            drawLabeledPoint(choice, selected, magentaPrint);
-        } else {
-            setb("hoverSelected", false);
+        if (hovering_point_ >= 0) {
+            drawLabeledPoint(0, calibration_meshes_[hovering_mesh_]->getProjected(hovering_point_), magentaPrint);
         }
-        
-        // draw selected point yellow
-        if(getb("selected")) {
-            int choice = geti("selectionChoice");
-            ofVec2f selected = imageMesh.getVertex(choice);
-            drawLabeledPoint(choice, selected, yellowPrint, ofColor::white, ofColor::black);
+//        int choice;
+//        float distance;
+//        ofVec3f selected = getClosestPointOnMesh(projected_mesh_, mouseX, mouseY, &choice, &distance);
+//        if (!ofGetMousePressed() && distance < getf("selectionRadius")) {
+//            seti("hoverChoice", choice);
+//            setb("hoverSelected", true);
+//            drawLabeledPoint(choice, selected, magentaPrint);
+//        } else {
+//            setb("hoverSelected", false);
+//        }
+//        
+//        // draw selected point yellow
+        if (selected_point_ >= 0) {
+            drawLabeledPoint(0, selectedMesh()->getProjected(selected_point_), yellowPrint, ofColor::white, ofColor::black);
         }
+//        if (getb("selected")) {
+//            int choice = geti("selectionChoice");
+//            ofVec2f selected = projected_mesh_.getVertex(choice);
+//            drawLabeledPoint(choice, selected, yellowPrint, ofColor::white, ofColor::black);
+//        }
     }
 }
 
@@ -634,12 +700,14 @@ void testApp::drawRenderMode() {
 	glPushMatrix();
 	glMatrixMode(GL_MODELVIEW);
 	
-	if(calibrationReady) {
-		intrinsics.loadProjectionMatrix(10, 2000);
-		applyMatrix(modelMatrix);
+	if (calibration_ready_) {
+		intrinsics_.loadProjectionMatrix(10, 2000);
+		applyMatrix(model_matrix_);
 		render();
-		if(getb("setupMode")) {
-			imageMesh = getProjectedMesh(objectMesh);
+		if (getb("setupMode")) {
+            for (int i = 0; i < calibration_meshes_.size(); i++) {
+                calibration_meshes_[i]->projected_mesh = getProjectedMesh(calibration_meshes_[i]->object_mesh);
+            }
 		}
 	}
 	
@@ -648,53 +716,90 @@ void testApp::drawRenderMode() {
 	glPopMatrix();
 	glMatrixMode(GL_MODELVIEW);
 	
-	if(getb("setupMode")) {
+	if (getb("setupMode")) {
 		// draw all reference points cyan
-		int n = referencePoints.size();
-		for(int i = 0; i < n; i++) {
-			if(referencePoints[i]) {
-				drawLabeledPoint(i, toOf(imagePoints[i]), cyanPrint);
-			}
-		}
+        for (int j = 0; j < calibration_meshes_.size(); j++) {
+            CalibrationMesh *m = calibration_meshes_[j];
+            int n = m->points.size();
+            for (int i = 0; i < n; i++) {
+                if (m->points[i].enabled) {
+                    drawLabeledPoint(i, toOf(m->points[i].image), cyanPrint);
+                }
+            }
+        }
 		
 		// move points that need to be dragged
 		// draw selected yellow
-		int choice = geti("selectionChoice");
-		if(getb("selected")) {
-			referencePoints[choice] = true;
-			Point2f& cur = imagePoints[choice];
-			if(cur == Point2f()) {
-				if(calibrationReady) {
-					cur = toCv(ofVec2f(imageMesh.getVertex(choice)));
-				} else {
-					cur = Point2f(mouseX, mouseY);
-				}
-			}
-		}
-		if(getb("dragging")) {
-			Point2f& cur = imagePoints[choice];
+//		int choice = geti("selectionChoice");
+//		if (getb("selected")) {
+//			reference_points_[choice] = true;
+//			Point2f& current = image_points_[choice];
+//			if (current == Point2f()) {
+//				if (calibration_ready_) {
+//					current = toCv(ofVec2f(projected_mesh_.getVertex(choice)));
+//				} else {
+//					current = Point2f(mouseX, mouseY);
+//				}
+//			}
+//		}
+        if (selected_point_ >= 0) {
+            CalibrationPoint &p = selectedPoint();
+            p.enabled = true;
+            if (p.image == Point2f()) {
+                if (calibration_ready_) {
+                    p.image = toCv(ofVec2f(selectedMesh()->projected_mesh.getVertex(selected_point_)));
+                } else {
+                    p.image = Point2f(mouseX, mouseY);
+                }
+            }
+        }
+		if (getb("dragging")) {
+//			Point2f& current = image_points_[choice];
+            Point2f &current = selectedPoint().image;
 			float rate = ofGetMousePressed(0) ? getf("slowLerpRate") : getf("fastLerpRate");
-			cur = Point2f(ofLerp(cur.x, mouseX, rate), ofLerp(cur.y, mouseY, rate));
-			drawLabeledPoint(choice, toOf(cur), yellowPrint, ofColor::white, ofColor::black);
+			current = Point2f(ofLerp(current.x, mouseX, rate), ofLerp(current.y, mouseY, rate));
+			drawLabeledPoint(selected_point_, toOf(current), yellowPrint, ofColor::white, ofColor::black);
 			ofSetColor(ofColor::black);
-			ofRect(toOf(cur), 1, 1);
-		} else if(getb("arrowing")) {
-			Point2f& cur = imagePoints[choice];
-			drawLabeledPoint(choice, toOf(cur), yellowPrint, ofColor::white, ofColor::black);
+			ofRect(toOf(current), 1, 1);
+		} else if (getb("arrowing")) {
+//			Point2f& current = image_points_[choice];
+            Point2f &current = selectedPoint().image;
+			drawLabeledPoint(selected_point_, toOf(current), yellowPrint, ofColor::white, ofColor::black);
 			ofSetColor(ofColor::black);
-			ofRect(toOf(cur), 1, 1);
-        } else {
-			// check to see if anything is selected
-			// draw hover magenta
-			float distance;
-			ofVec2f selected = toOf(getClosestPoint(imagePoints, mouseX, mouseY, &choice, &distance));
-			if(!ofGetMousePressed() && referencePoints[choice] && distance < getf("selectionRadius")) {
-				seti("hoverChoice", choice);
-				setb("hoverSelected", true);
-				drawLabeledPoint(choice, selected, magentaPrint);
-			} else {
-				setb("hoverSelected", false);
-			}
+			ofRect(toOf(current), 1, 1);
+//        } else {
+//			// check to see if anything is selected
+//			// draw hover magenta
+//			float distance;
+//			ofVec2f selected = toOf(getClosestPoint(image_points_, mouseX, mouseY, &choice, &distance));
+//			if (!ofGetMousePressed() && reference_points_[choice] && distance < getf("selectionRadius")) {
+//				seti("hoverChoice", choice);
+//				setb("hoverSelected", true);
+//				drawLabeledPoint(choice, selected, magentaPrint);
+//			} else {
+//				setb("hoverSelected", false);
+//			}
 		}
 	}
 }
+
+
+float testApp::getClosestPointOnMeshes(float x, float y, int &mesh_index, int &point_index) {
+	float distance = numeric_limits<float>::infinity();
+    for (int j = 0; j < calibration_meshes_.size(); j++) {
+        ofMesh &mesh = calibration_meshes_[j]->projected_mesh;
+        for(int i = 0; i < mesh.getNumVertices(); i++) {
+            const ofVec3f &v = mesh.getVerticesPointer()[i];
+            float dx = x - v.x;
+            float dy = y - v.y;
+            float d = dx * dx + dy * dy;
+            if(d < distance) {
+                distance = d;
+                mesh_index = j;
+                point_index = i;
+            }
+        }
+    }
+	return distance;
+}
+
