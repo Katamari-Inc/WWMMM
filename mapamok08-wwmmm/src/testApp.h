@@ -15,13 +15,13 @@ class CalibrationPoint {
   public:
     CalibrationPoint() : index(0), enabled(false) {}
     int index;
-    cv::Point3f object;
-    cv::Point2f image;
+    ofVec3f object;
+    ofVec2f image;
     bool enabled;
 };
 
 
-class CalibrationMesh {
+class CalibrationMesh : public ofNode {
   public:
     CalibrationMesh(ofMesh &mesh) {
         object_mesh = mesh;
@@ -29,8 +29,12 @@ class CalibrationMesh {
         points.resize(n);
         for (int i = 0; i < n; i++) {
             points[i].index = i;
-            points[i].object = ofxCv::toCv(object_mesh.getVertex(i));
+            points[i].object = object_mesh.getVertex(i);
         }
+    }
+    
+    void project() {
+        projected_mesh = getProjectedMesh(object_mesh);
     }
     
     ofVec3f getProjected(int index) {
@@ -84,16 +88,7 @@ class testApp : public ofBaseApp {
 	ofxAssimpModelLoader model_;
 	ofEasyCam camera_;
     vector<CalibrationMesh*> calibration_meshes_;
-//	ofVboMesh object_mesh_;
-//	ofMesh projected_mesh_;
-//	ofLight light_;
-	
-//	vector<cv::Point3f> object_points_;
-//	vector<cv::Point2f> image_points_;
-//	vector<bool> reference_points_;
-    
-//    ofVec3f hover_point_;
-//    ofVec3f selected_point_;
+
     int selected_mesh_;
     int selected_point_;
     int hovering_mesh_;

@@ -116,12 +116,14 @@ void testApp::draw() {
 
 
 void testApp::keyPressed(int key) {
+    float speed = ofGetKeyPressed(OF_KEY_SHIFT) ? 5 : 1;
+    
     if (getb("selectionMode") || selected_point_ >= 0) {
         if (key == OF_KEY_LEFT || key == OF_KEY_UP || key == OF_KEY_RIGHT|| key == OF_KEY_DOWN){
 //            int choice = geti("selectionChoice");
             setb("arrowing", true);
             if (selected_point_ >= 0){
-                Point2f &p = selectedPoint().image;
+                ofVec2f &p = selectedPoint().image;
                 switch(key) {
                     case OF_KEY_LEFT: p.x -= 1; break;
                     case OF_KEY_RIGHT: p.x += 1; break;
@@ -135,36 +137,35 @@ void testApp::keyPressed(int key) {
     } else {
         switch (key) {
             case OF_KEY_UP:
-                motor_manager_.setHeight(motor_manager_.getHeight() + 1);
+                motor_manager_.setHeight(motor_manager_.getHeight() + speed);
                 break;
             case OF_KEY_DOWN:
-                motor_manager_.setHeight(motor_manager_.getHeight() - 1);
+                motor_manager_.setHeight(motor_manager_.getHeight() - speed);
                 break;
             case 'n':
-                roll_ -= 1;
+                roll_ -= speed;
                 applyOrientation();
                 break;
             case 'h':
-                roll_ += 1;
+                roll_ += speed;
                 applyOrientation();
                 break;
             case 'c':
-                pitch_ -= 1;
+                pitch_ -= speed;
                 applyOrientation();
                 break;
             case 't':
-                pitch_ += 1;
+                pitch_ += speed;
                 applyOrientation();
                 break;
         }
     }
     
-    
     switch (key) {
         case OF_KEY_BACKSPACE: // delete selected
             if (selected_point_ >= 0) {
                 selectedPoint().enabled = false;
-                selectedPoint().image = Point2f();
+                selectedPoint().image = ofVec2f::zero();
                 selected_mesh_ = -1;
                 selected_point_ = -1;
 //            if (getb("selected")) {
@@ -190,22 +191,24 @@ void testApp::keyPressed(int key) {
             break;
             
         case '1':
-            motor_manager_.move(0, 1);
+            motor_manager_.move(0, speed);
+            calibration_meshes_[1]->boom(speed);
             break;
         case '\'':
-            motor_manager_.move(0, -1);
+            motor_manager_.move(0, -speed);
             break;
         case '2':
-            motor_manager_.move(1, 1);
+            motor_manager_.move(1, speed);
+            calibration_meshes_[1]->boom(-speed);
             break;
         case ',':
-            motor_manager_.move(1, -1);
+            motor_manager_.move(1, -speed);
             break;
         case '3':
-            motor_manager_.move(2, 1);
+            motor_manager_.move(2, speed);
             break;
         case '.':
-            motor_manager_.move(2, -1);
+            motor_manager_.move(2, -speed);
             break;
         case 'o':
             motor_manager_.initOrigin();
@@ -223,12 +226,12 @@ void testApp::mouseMoved(int x, int y) {
         float distance = getClosestPointOnMeshes(x, y, hovering_mesh_, hovering_point_);
         if (distance < getf("selectionRadius")) {
             //        seti("hoverChoice", choice);
-            setb("hoverSelected", true);
+//            setb("hoverSelected", true);
             //        drawLabeledPoint(choice, selected, magentaPrint);
         } else {
             hovering_mesh_ = -1;
             hovering_point_ = -1;
-            setb("hoverSelected", false);
+//            setb("hoverSelected", false);
         }
     }
 }
@@ -329,7 +332,6 @@ void testApp::render() {
             for (int i = 0; i < calibration_meshes_.size(); i++) {
                 calibration_meshes_[i]->object_mesh.drawFaces();
             }
-//			object_mesh_.drawFaces();
 //			if (useShader) shader.end();
 			break;
 		case 1: // fullWireframe
@@ -337,19 +339,18 @@ void testApp::render() {
             for (int i = 0; i < calibration_meshes_.size(); i++) {
                 calibration_meshes_[i]->object_mesh.drawFaces();
             }
-//			object_mesh_.drawWireframe();
 //			if (useShader) shader.end();
 			break;
 		case 2: // outlineWireframe
-//			LineArt::draw(object_mesh_, true, transparentBlack, useShader ? &shader : NULL);
             for (int i = 0; i < calibration_meshes_.size(); i++) {
                 LineArt::draw(calibration_meshes_[i]->object_mesh, true, transparentBlack, NULL);
             }
 			break;
 		case 3: // occludedWireframe
-//			LineArt::draw(object_mesh_, false, transparentBlack, useShader ? &shader : NULL);
             for (int i = 0; i < calibration_meshes_.size(); i++) {
+                calibration_meshes_[i]->transformGL();
                 LineArt::draw(calibration_meshes_[i]->object_mesh, false, transparentBlack, NULL);
+                calibration_meshes_[i]->restoreTransformGL();
             }
 			break;
 	}
@@ -497,7 +498,7 @@ void testApp::loadCalibration() {
 
 
 void testApp::setupControlPanel() {
-	panel.setup("mapamok", 10, 10, 300, 600);
+	panel.setup("mapamokWWMMM", 10, 10, 300, 600);
     //	panel.msg = "tab hides the panel, space toggles render/selection mode, 'f' toggles fullscreen.";
 	
 	panel.addPanel("Interaction");
@@ -551,7 +552,7 @@ void testApp::setupControlPanel() {
 	panel.addToggle("selectionMode", "selectionMode", true);
 	panel.addToggle("hoverSelected", "hoverSelected", false);
 //	panel.addSlider("hoverChoice", "hoverChoice", 0, 0, object_points_.size(), true);
-	panel.addToggle("selected", "selected", false);
+//	panel.addToggle("selected", "selected", false);
 	panel.addToggle("dragging", "dragging", false);
 	panel.addToggle("arrowing", "arrowing", false);
 //	panel.addSlider("selectionChoice", "selectionChoice", 0, 0, object_points_.size(), true);
@@ -586,12 +587,13 @@ void testApp::updateRenderMode() {
 	vector<vector<Point2f> > reference_image_points(1);
     for (int j = 0; j < calibration_meshes_.size(); j++) {
         CalibrationMesh *m = calibration_meshes_[j];
+        ofMatrix4x4 matrix = m->getGlobalTransformMatrix();
         int n = m->points.size();
         for (int i = 0; i < n; i++) {
             CalibrationPoint &p = m->points[i];
             if (p.enabled) {
-                reference_object_points[0].push_back(p.object);
-                reference_image_points[0].push_back(p.image);
+                reference_object_points[0].push_back(toCv(p.object * matrix));
+                reference_image_points[0].push_back(toCv(p.image));
             }
         }
     }
@@ -639,7 +641,9 @@ void testApp::drawSelectionMode() {
         
         if (getb("setupMode")) {
             for (int i = 0; i < calibration_meshes_.size(); i++) {
-                calibration_meshes_[i]->projected_mesh = getProjectedMesh(calibration_meshes_[i]->object_mesh);
+                calibration_meshes_[i]->transformGL();
+                calibration_meshes_[i]->project();
+                calibration_meshes_[i]->restoreTransformGL();
             }
         }
     }
@@ -670,26 +674,10 @@ void testApp::drawSelectionMode() {
         if (hovering_point_ >= 0) {
             drawLabeledPoint(0, calibration_meshes_[hovering_mesh_]->getProjected(hovering_point_), magentaPrint);
         }
-//        int choice;
-//        float distance;
-//        ofVec3f selected = getClosestPointOnMesh(projected_mesh_, mouseX, mouseY, &choice, &distance);
-//        if (!ofGetMousePressed() && distance < getf("selectionRadius")) {
-//            seti("hoverChoice", choice);
-//            setb("hoverSelected", true);
-//            drawLabeledPoint(choice, selected, magentaPrint);
-//        } else {
-//            setb("hoverSelected", false);
-//        }
-//        
-//        // draw selected point yellow
+        // draw selected point yellow
         if (selected_point_ >= 0) {
             drawLabeledPoint(0, selectedMesh()->getProjected(selected_point_), yellowPrint, ofColor::white, ofColor::black);
         }
-//        if (getb("selected")) {
-//            int choice = geti("selectionChoice");
-//            ofVec2f selected = projected_mesh_.getVertex(choice);
-//            drawLabeledPoint(choice, selected, yellowPrint, ofColor::white, ofColor::black);
-//        }
     }
 }
 
@@ -723,62 +711,36 @@ void testApp::drawRenderMode() {
             int n = m->points.size();
             for (int i = 0; i < n; i++) {
                 if (m->points[i].enabled) {
-                    drawLabeledPoint(i, toOf(m->points[i].image), cyanPrint);
+                    drawLabeledPoint(i, m->points[i].image, cyanPrint);
                 }
             }
         }
 		
 		// move points that need to be dragged
 		// draw selected yellow
-//		int choice = geti("selectionChoice");
-//		if (getb("selected")) {
-//			reference_points_[choice] = true;
-//			Point2f& current = image_points_[choice];
-//			if (current == Point2f()) {
-//				if (calibration_ready_) {
-//					current = toCv(ofVec2f(projected_mesh_.getVertex(choice)));
-//				} else {
-//					current = Point2f(mouseX, mouseY);
-//				}
-//			}
-//		}
         if (selected_point_ >= 0) {
             CalibrationPoint &p = selectedPoint();
             p.enabled = true;
-            if (p.image == Point2f()) {
+            if (p.image == ofVec2f::zero()) {
                 if (calibration_ready_) {
-                    p.image = toCv(ofVec2f(selectedMesh()->projected_mesh.getVertex(selected_point_)));
+                    p.image = ofVec2f(selectedMesh()->projected_mesh.getVertex(selected_point_));
                 } else {
-                    p.image = Point2f(mouseX, mouseY);
+                    p.image = ofVec2f(mouseX, mouseY);
                 }
             }
         }
 		if (getb("dragging")) {
-//			Point2f& current = image_points_[choice];
-            Point2f &current = selectedPoint().image;
+            ofVec2f &current = selectedPoint().image;
 			float rate = ofGetMousePressed(0) ? getf("slowLerpRate") : getf("fastLerpRate");
-			current = Point2f(ofLerp(current.x, mouseX, rate), ofLerp(current.y, mouseY, rate));
-			drawLabeledPoint(selected_point_, toOf(current), yellowPrint, ofColor::white, ofColor::black);
+			current = ofVec2f(ofLerp(current.x, mouseX, rate), ofLerp(current.y, mouseY, rate));
+			drawLabeledPoint(selected_point_, current, yellowPrint, ofColor::white, ofColor::black);
 			ofSetColor(ofColor::black);
-			ofRect(toOf(current), 1, 1);
+			ofRect(current, 1, 1);
 		} else if (getb("arrowing")) {
-//			Point2f& current = image_points_[choice];
-            Point2f &current = selectedPoint().image;
-			drawLabeledPoint(selected_point_, toOf(current), yellowPrint, ofColor::white, ofColor::black);
+            ofVec2f &current = selectedPoint().image;
+			drawLabeledPoint(selected_point_, current, yellowPrint, ofColor::white, ofColor::black);
 			ofSetColor(ofColor::black);
-			ofRect(toOf(current), 1, 1);
-//        } else {
-//			// check to see if anything is selected
-//			// draw hover magenta
-//			float distance;
-//			ofVec2f selected = toOf(getClosestPoint(image_points_, mouseX, mouseY, &choice, &distance));
-//			if (!ofGetMousePressed() && reference_points_[choice] && distance < getf("selectionRadius")) {
-//				seti("hoverChoice", choice);
-//				setb("hoverSelected", true);
-//				drawLabeledPoint(choice, selected, magentaPrint);
-//			} else {
-//				setb("hoverSelected", false);
-//			}
+			ofRect(current, 1, 1);
 		}
 	}
 }
