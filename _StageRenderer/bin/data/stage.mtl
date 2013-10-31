@@ -1,0 +1,40 @@
+# Blender MTL File: 'stage.blend'
+# Material Count: 4
+
+newmtl Bridge
+Ns 96.078431
+Ka 0.000000 0.000000 0.000000
+Kd 0.006825 0.254831 0.000000
+Ks 0.500000 0.500000 0.500000
+Ni 1.000000
+d 1.000000
+illum 2
+
+newmtl Elevators
+Ns 96.078431
+Ka 0.000000 0.000000 0.000000
+Kd 0.710554 0.019445 0.019445
+Ks 0.500000 0.500000 0.500000
+Ni 1.000000
+d 1.000000
+illum 2
+
+newmtl Ocean
+Ns 96.078431
+Ka 0.000000 0.000000 0.000000
+Kd 0.640000 0.640000 0.640000
+Ks 0.500000 0.500000 0.500000
+Ni 1.000000
+d 1.000000
+illum 0
+map_Kd sea.png
+
+newmtl Stage
+Ns 96.078431
+Ka 0.000000 0.000000 0.000000
+Kd 0.640000 0.640000 0.640000
+Ks 0.500000 0.500000 0.500000
+Ni 1.000000
+d 1.000000
+illum 0
+map_Kd /Users/hiko/Dropbox/Projects/WWM/dotfes/models/http-aid-dcc.png
