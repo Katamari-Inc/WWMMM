@@ -3,6 +3,7 @@
 #include "ofMain.h"
 #include "ofxAssimpModelLoader.h"
 #include "ofxFPSCam.h"
+#include "ofxOsc.h"
 
 class testApp : public ofBaseApp {
   
@@ -28,4 +29,7 @@ class testApp : public ofBaseApp {
   ofxAssimpMeshHelper bridges_;
   ofxAssimpMeshHelper ocean_;
 
+  ofIcoSpherePrimitive ball_;
+
+  ofxOscReceiver receiver_;
 };

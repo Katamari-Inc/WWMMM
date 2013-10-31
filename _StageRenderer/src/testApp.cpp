@@ -11,11 +11,28 @@ void testApp::setup() {
   elevators_ = loader_.getMeshHelper(1);
   bridges_ = loader_.getMeshHelper(2);
   ocean_ = loader_.getMeshHelper(3);
+  
+  ball_.setRadius(2);
+  ball_.setResolution(0);
+  ball_.setPosition(0, 0, 0);
+  
+  receiver_.setup(8001);
 }
 
 //--------------------------------------------------------------
 void testApp::update() {
   camera_.update();
+  
+  while (receiver_.hasWaitingMessages()) {
+    ofxOscMessage message;
+    receiver_.getNextMessage(&message);
+    string address = message.getAddress();
+    if (address == "/ball/position") {
+      ball_.setPosition(message.getArgAsFloat(0) * .3, message.getArgAsFloat(1) * .3, message.getArgAsFloat(2) * .3);
+    } else if (address == "/ball/orientation") {
+      ball_.setOrientation(ofQuaternion(message.getArgAsFloat(0), message.getArgAsFloat(1), message.getArgAsFloat(2), message.getArgAsFloat(3)));
+    }
+  }
 }
 
 //--------------------------------------------------------------
@@ -51,6 +68,7 @@ void testApp::draw() {
   ofPopMatrix();
   ofPopStyle();
   
+  ofPushMatrix();
   ofMultMatrix(floors_.matrix);
   glEnable(GL_POLYGON_OFFSET_FILL);
   glPolygonOffset(1.0, 1.0);
@@ -58,10 +76,26 @@ void testApp::draw() {
   floors_.vbo.drawElements(GL_TRIANGLES, floors_.indices.size());
   floors_.getTexturePtr()->unbind();
   glDisable(GL_POLYGON_OFFSET_FILL);
-  ofPushMatrix();
   ofPopMatrix();
+  
+  ofPushStyle();
+  ofNoFill();
+  ofSetColor(255, 0, 0);
+  ofSetLineWidth(2);
+  ofPushMatrix();
+  ofTranslate(0, 20, 0);
+  ball_.drawWireframe();
+  ofPopMatrix();
+  ofPopStyle();
 
   camera_.end();
+  
+  stringstream s;
+  ofVec3f p = ball_.getPosition();
+  s << "X: " << ofToString(p.x, 2) << endl
+    << "Y: " << ofToString(p.y, 2) << endl
+    << "Y: " << ofToString(p.z, 2);
+  ofDrawBitmapStringHighlight(s.str(), 10, 20);
 }
 
 //--------------------------------------------------------------
