@@ -301,6 +301,7 @@ void testApp::loadCalibration() {
     
     string calibPath;
     ofFileDialogResult result = ofSystemLoadDialog("Select a calibration folder", true, ofToDataPath("", true));
+    if (!result.bSuccess) return;
     calibPath = result.getPath();
     
     // load objectPoints and imagePoints
