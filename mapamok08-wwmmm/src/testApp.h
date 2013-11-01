@@ -1,5 +1,14 @@
 #pragma once
 
+//#define USE_BOOST_SERIALIZATION
+
+#ifdef USE_BUSE_BOOST_SERIALIZATION
+#include <boost/serialization/serialization.hpp>
+#include <boost/serialization/vector.hpp>
+#include <boost/archive/text_oarchive.hpp>
+#include <boost/archive/text_iarchive.hpp>
+#endif
+
 #include "ofMain.h"
 #include "ofxCv.h"
 #include "ofxAssimpModelLoader.h"
@@ -11,13 +20,37 @@
 #include "MotorManager.h"
 
 
+#ifdef USE_BOOST_SERIALIZATION
+namespace boost {
+    namespace serialization {
+        template <class Archive>
+        void serialize(Archive &archive, ofVec3f &v, const unsigned int version) {
+            archive & v.x & v.y & v.z;
+        }
+        template <class Archive>
+        void serialize(Archive &archive, ofVec2f &v, const unsigned int version) {
+            archive & v.x & v.y;
+        }
+    }
+}
+#endif
+
+
 class CalibrationPoint {
   public:
-    CalibrationPoint() : index(0), enabled(false) {}
-    int index;
+    CalibrationPoint() : enabled(false) {}
     ofVec3f object;
     ofVec2f image;
     bool enabled;
+    
+  private:
+#ifdef USE_BOOST_SERIALIZATION
+    friend class boost::serialization::access;
+    template<class Archive>
+    void serialize(Archive &archive, unsigned int version) {
+        archive & enabled;
+    }
+#endif
 };
 
 
@@ -28,7 +61,6 @@ class CalibrationMesh : public ofNode {
         int n = object_mesh.getNumVertices();
         points.resize(n);
         for (int i = 0; i < n; i++) {
-            points[i].index = i;
             points[i].object = object_mesh.getVertex(i);
         }
     }
@@ -44,6 +76,15 @@ class CalibrationMesh : public ofNode {
 	ofVboMesh object_mesh;
 	ofMesh projected_mesh;
     vector<CalibrationPoint> points;
+    
+  private:
+#ifdef USE_BOOST_SERIALIZATION
+    friend class boost::serialization::access;
+    template<class Archive>
+    void serialize(Archive &archive, unsigned int version) {
+        archive & points;
+    }
+#endif
 };
 
 

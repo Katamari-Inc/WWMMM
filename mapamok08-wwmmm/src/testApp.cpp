@@ -264,6 +264,11 @@ void testApp::setupMesh() {
         ofMesh m = model_.getMesh(i);
         calibration_meshes_.push_back(new CalibrationMesh(m));
     }
+    
+//    ofstream ofs("tetete.dat");
+//    boost::archive::text_oarchive oa(ofs);
+//    oa << calibration_meshes_;
+//    ofs.close();
 }
 
 
