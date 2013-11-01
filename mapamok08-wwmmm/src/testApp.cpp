@@ -257,8 +257,8 @@ void testApp::mouseReleased(int x, int y, int button) {
 
 
 void testApp::setupMesh() {
-	if (!model_.loadModel("model.obj")) {
-        ofExit(-1);
+	if (!model_.loadModel("stage.obj")) {
+        ofExit(1);
     }
     for (int i = 0; i < model_.getNumMeshes(); i++) {
         ofMesh m = model_.getMesh(i);
