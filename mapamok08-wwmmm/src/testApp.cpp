@@ -50,13 +50,6 @@ void testApp::setup() {
     motor_manager_.setup(port);
     
     osc_receiver_.setup(8001);
-    
-    
-    ofMatrix4x4 m;
-    m.translate(0, 100, 0);
-    ofVec3f v(10, 20, 30);
-    cout << v * m << endl;
-    cout << m * v << endl;
 }
 
 
@@ -82,8 +75,8 @@ void testApp::update() {
         if (message.getAddress() == "/world/orientation") {
             ofQuaternion q;
             q.set(message.getArgAsFloat(0), message.getArgAsFloat(1), message.getArgAsFloat(2), message.getArgAsFloat(3));
-//            motor_manager_.setOrientation(q);
             stage_.setOrientation(q);
+            motor_manager_.setTransformMatrix(stage_.getGlobalTransformMatrix());
         }
     }
     motor_manager_.update();
@@ -126,6 +119,7 @@ void testApp::keyPressed(int key) {
     float speed = ofGetKeyPressed(OF_KEY_SHIFT) ? 5 : 1;
     bool needsUpdate = false;
     
+    setb("arrowing",false);
     if (getb("selectionMode") || selected_point_ >= 0) {
         if (key == OF_KEY_LEFT || key == OF_KEY_UP || key == OF_KEY_RIGHT|| key == OF_KEY_DOWN){
             setb("arrowing", true);
@@ -138,8 +132,6 @@ void testApp::keyPressed(int key) {
                     case OF_KEY_DOWN: p.y += 1.0 / speed; break;
                 }
             }
-        } else {
-            setb("arrowing",false);
         }
     } else {
         switch (key) {
@@ -252,6 +244,7 @@ void testApp::mousePressed(int x, int y, int button) {
 	if (hovering_point_ >= 0) {
         selected_mesh_ = hovering_mesh_;
         selected_point_ = hovering_point_;
+        setb("arrowing", false);
 		setb("dragging", true);
 	} else {
         selected_mesh_ = -1;
@@ -617,12 +610,11 @@ void testApp::updateRenderMode() {
 	vector<vector<Point2f> > reference_image_points(1);
     for (int j = 0; j < calibration_meshes_.size(); j++) {
         CalibrationMesh *m = calibration_meshes_[j];
-        ofMatrix4x4 matrix = m->getGlobalTransformMatrix();
         int n = m->points.size();
         for (int i = 0; i < n; i++) {
             CalibrationPoint &p = m->points[i];
             if (p.enabled) {
-                reference_object_points[0].push_back(toCv(p.object * matrix));
+                reference_object_points[0].push_back(toCv(p.object));
                 reference_image_points[0].push_back(toCv(p.image));
             }
         }
@@ -702,11 +694,11 @@ void testApp::drawSelectionMode() {
         // check to see if anything is selected
         // draw hover point magenta
         if (hovering_point_ >= 0) {
-            drawLabeledPoint(0, calibration_meshes_[hovering_mesh_]->getProjected(hovering_point_), magentaPrint);
+            drawLabeledPoint(hovering_point_, calibration_meshes_[hovering_mesh_]->getProjected(hovering_point_), magentaPrint);
         }
         // draw selected point yellow
         if (selected_point_ >= 0) {
-            drawLabeledPoint(0, selectedMesh()->getProjected(selected_point_), yellowPrint, ofColor::white, ofColor::black);
+            drawLabeledPoint(selected_point_, selectedMesh()->getProjected(selected_point_), yellowPrint, ofColor::white, ofColor::black);
         }
     }
 }
@@ -754,6 +746,7 @@ void testApp::drawRenderMode() {
             CalibrationPoint &p = selectedPoint();
             p.enabled = true;
             if (p.image == ofVec2f::zero()) {
+                p.object = p.object * selectedMesh()->getGlobalTransformMatrix();
                 if (calibration_ready_) {
                     p.image = ofVec2f(selectedMesh()->projected_mesh.getVertex(selected_point_));
                 } else {
@@ -774,7 +767,7 @@ void testApp::drawRenderMode() {
 			ofSetColor(ofColor::black);
 			ofRect(current, 1, 1);
 		} else if (hovering_point_ >= 0) {
-            drawLabeledPoint(0, calibration_meshes_[hovering_mesh_]->points[hovering_point_].image, magentaPrint);
+            drawLabeledPoint(hovering_point_, calibration_meshes_[hovering_mesh_]->points[hovering_point_].image, magentaPrint);
         }
 	}
 }
