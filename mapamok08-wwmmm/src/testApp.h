@@ -56,7 +56,7 @@ class CalibrationPoint {
 
 class CalibrationMesh : public ofNode {
   public:
-    CalibrationMesh(ofMesh &mesh) {
+    CalibrationMesh(ofMesh &mesh) : useTexture(false) {
         object_mesh = mesh;
         int n = object_mesh.getNumVertices();
         points.resize(n);
@@ -73,9 +73,25 @@ class CalibrationMesh : public ofNode {
         return projected_mesh.getVertex(index);
     }
     
+    bool loadTexture(string filename) {
+        useTexture = texture.loadImage(filename);
+    }
+    
+    void customDraw() {
+        ofPushStyle();
+        ofSetColor(color);
+        if (useTexture) texture.bind();
+        object_mesh.drawFaces();
+        if (useTexture) texture.unbind();
+        ofPopStyle();
+    }
+    
 	ofVboMesh object_mesh;
 	ofMesh projected_mesh;
     vector<CalibrationPoint> points;
+    bool useTexture;
+    ofImage texture;
+    ofColor color;
     
   private:
 #ifdef USE_BOOST_SERIALIZATION
@@ -130,6 +146,9 @@ class testApp : public ofBaseApp {
 	ofxAssimpModelLoader model_;
 	ofEasyCam camera_;
     vector<CalibrationMesh*> calibration_meshes_;
+    ofNode stage_;
+    ofImage floor_texture_;
+    ofImage ocean_texture_;
 
     int selected_mesh_;
     int selected_point_;
@@ -155,6 +174,7 @@ class testApp : public ofBaseApp {
         qr.makeRotate(roll_, 0, 0, 1);
         qp *= qr;
         motor_manager_.setOrientation(qp);
+        stage_.setOrientation(qp);
     }
     
     ofxOscReceiver osc_receiver_;

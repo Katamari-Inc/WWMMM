@@ -138,9 +138,11 @@ void testApp::keyPressed(int key) {
         switch (key) {
             case OF_KEY_UP:
                 motor_manager_.setHeight(motor_manager_.getHeight() + speed);
+                stage_.boom(speed * .1);
                 break;
             case OF_KEY_DOWN:
                 motor_manager_.setHeight(motor_manager_.getHeight() - speed);
+                stage_.boom(-speed * .1);
                 break;
             case 'n':
                 roll_ -= speed;
@@ -168,16 +170,10 @@ void testApp::keyPressed(int key) {
                 selectedPoint().image = ofVec2f::zero();
                 selected_mesh_ = -1;
                 selected_point_ = -1;
-//            if (getb("selected")) {
-//                setb("selected", false);
-//                int choice = geti("selectionChoice");
-//                reference_points_[choice] = false;
-//                image_points_[choice] = Point2f();
             }
             break;
             
         case '\n': // deselect
-//            setb("selected", false);
             selected_mesh_ = -1;
             selected_point_ = -1;
             break;
@@ -192,34 +188,42 @@ void testApp::keyPressed(int key) {
             
         case '1':
             motor_manager_.move(0, speed);
-            calibration_meshes_[1]->boom(speed);
             break;
         case '\'':
+        case 'q':
             motor_manager_.move(0, -speed);
             break;
         case '2':
             motor_manager_.move(1, speed);
-            calibration_meshes_[1]->boom(-speed);
             break;
         case ',':
+        case 'w':
             motor_manager_.move(1, -speed);
             break;
         case '3':
             motor_manager_.move(2, speed);
             break;
         case '.':
+        case 'e':
             motor_manager_.move(2, -speed);
             break;
         case 'o':
+        case 's':
             motor_manager_.initOrigin();
+            stage_.setPosition(0, 0, 0);
+            roll_ = pitch_ = 0;
+            applyOrientation();
             break;
         case 'a':
             motor_manager_.reset();
+            stage_.setPosition(0, 0, 0);
             roll_ = pitch_ = 0;
+            applyOrientation();
             break;
         
         case '5':
             motor_manager_.setHeight(500);
+            stage_.setPosition(0, 500, 0);
             break;
     }
 }
@@ -257,9 +261,29 @@ void testApp::setupMesh() {
 	if (!model_.loadModel("stage.obj")) {
         ofExit(1);
     }
+    ofDisableArbTex();
     for (int i = 0; i < model_.getNumMeshes(); i++) {
         ofMesh m = model_.getMesh(i);
-        calibration_meshes_.push_back(new CalibrationMesh(m));
+        CalibrationMesh *mesh = new CalibrationMesh(m);
+        calibration_meshes_.push_back(mesh);
+        ofLog(OF_LOG_VERBOSE, "%d: %d", i, m.getNumVertices());
+        if (m.getNumVertices() > 20) {
+            mesh->setParent(stage_);
+        }
+        switch (i) {
+            case 0:
+                mesh->loadTexture("ocean.png");
+                break;
+            case 1:
+                mesh->color.set(64, 148, 65);
+                break;
+            case 2:
+                mesh->color.set(219, 79, 79);
+                break;
+            case 3:
+                mesh->loadTexture("http-aid-dcc.png");
+                break;
+        }
     }
     
 //    ofstream ofs("tetete.dat");
@@ -271,9 +295,9 @@ void testApp::setupMesh() {
 
 void testApp::render() {
     ofPushMatrix();
-    ofTranslate(0, motor_manager_.getHeight() / 10.f, 0);
-    ofMatrix4x4 m(motor_manager_.orientation_);
-    ofMultMatrix(m);
+//    ofTranslate(0, motor_manager_.getHeight() / 10.f, 0);
+//    ofMatrix4x4 m(motor_manager_.orientation_);
+//    ofMultMatrix(m);
     
     ofDrawAxis(10);
     
@@ -332,7 +356,8 @@ void testApp::render() {
 			glEnable(GL_CULL_FACE);
 			glCullFace(GL_BACK);
             for (int i = 0; i < calibration_meshes_.size(); i++) {
-                calibration_meshes_[i]->object_mesh.drawFaces();
+                calibration_meshes_[i]->draw();
+//                calibration_meshes_[i]->object_mesh.drawFaces();
             }
 //			if (useShader) shader.end();
 			break;
@@ -505,7 +530,7 @@ void testApp::setupControlPanel() {
 	
 	panel.addPanel("Interaction");
 	panel.addToggle("setupMode", "setupMode", true);
-	panel.addSlider("scale", "scale", 1, .1, 25);
+	panel.addSlider("scale", "scale", 1, .1, 3);
 	panel.addSlider("backgroundColor", "backgroundColor", 0, 255, true);
     vector<string> boxNames;
     boxNames.push_back("faces");
@@ -696,7 +721,9 @@ void testApp::drawRenderMode() {
 		render();
 		if (getb("setupMode")) {
             for (int i = 0; i < calibration_meshes_.size(); i++) {
+                calibration_meshes_[i]->transformGL();
                 calibration_meshes_[i]->projected_mesh = getProjectedMesh(calibration_meshes_[i]->object_mesh);
+                calibration_meshes_[i]->restoreTransformGL();
             }
 		}
 	}
