@@ -122,7 +122,8 @@ class testApp : public ofBaseApp {
     void loadCalibration();
 	void saveCalibration();
     float getClosestPointOnMeshes(float x, float y, int &mesh_index, int &point_index);
-	
+	float getClosestImagePoint(float x, float y, int &mesh_index, int &point_index);
+    
     
 	ofxAutoControlPanel panel;
 

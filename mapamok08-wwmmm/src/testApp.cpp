@@ -217,22 +217,19 @@ void testApp::keyPressed(int key) {
             motor_manager_.reset();
             roll_ = pitch_ = 0;
             break;
+        
+        case '5':
+            motor_manager_.setHeight(500);
+            break;
     }
 }
 
 
 void testApp::mouseMoved(int x, int y) {
-    if (getb("selectionMode")) {
-        float distance = getClosestPointOnMeshes(x, y, hovering_mesh_, hovering_point_);
-        if (distance < getf("selectionRadius")) {
-            //        seti("hoverChoice", choice);
-//            setb("hoverSelected", true);
-            //        drawLabeledPoint(choice, selected, magentaPrint);
-        } else {
-            hovering_mesh_ = -1;
-            hovering_point_ = -1;
-//            setb("hoverSelected", false);
-        }
+    float distance = getb("selectionMode") ? getClosestPointOnMeshes(x, y, hovering_mesh_, hovering_point_) : getClosestImagePoint(x, y, hovering_mesh_, hovering_point_);
+    if (distance > getf("selectionRadius")) {
+        hovering_mesh_ = -1;
+        hovering_point_ = -1;
     }
 }
 
@@ -746,7 +743,9 @@ void testApp::drawRenderMode() {
 			drawLabeledPoint(selected_point_, current, yellowPrint, ofColor::white, ofColor::black);
 			ofSetColor(ofColor::black);
 			ofRect(current, 1, 1);
-		}
+		} else if (hovering_point_ >= 0) {
+            drawLabeledPoint(0, calibration_meshes_[hovering_mesh_]->points[hovering_point_].image, magentaPrint);
+        }
 	}
 }
 
@@ -767,6 +766,26 @@ float testApp::getClosestPointOnMeshes(float x, float y, int &mesh_index, int &p
             }
         }
     }
-	return distance;
+	return sqrt(distance);
 }
 
+
+float testApp::getClosestImagePoint(float x, float y, int &mesh_index, int &point_index) {
+	float distance = numeric_limits<float>::infinity();
+    for (int j = 0; j < calibration_meshes_.size(); j++) {
+        vector<CalibrationPoint> &p = calibration_meshes_[j]->points;
+        for (int i = 0; i < p.size(); i++) {
+            if (!p[i].enabled) continue;
+            const ofVec2f &v = p[i].image;
+            float dx = x - v.x;
+            float dy = y - v.y;
+            float d = dx * dx + dy * dy;
+            if(d < distance) {
+                distance = d;
+                mesh_index = j;
+                point_index = i;
+            }
+        }
+    }
+	return sqrt(distance);
+}
