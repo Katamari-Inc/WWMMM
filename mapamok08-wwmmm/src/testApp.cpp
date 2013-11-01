@@ -49,8 +49,14 @@ void testApp::setup() {
     }
     motor_manager_.setup(port);
     
-    pitch_ = roll_ = 0;
     osc_receiver_.setup(8001);
+    
+    
+    ofMatrix4x4 m;
+    m.translate(0, 100, 0);
+    ofVec3f v(10, 20, 30);
+    cout << v * m << endl;
+    cout << m * v << endl;
 }
 
 
@@ -76,7 +82,8 @@ void testApp::update() {
         if (message.getAddress() == "/world/orientation") {
             ofQuaternion q;
             q.set(message.getArgAsFloat(0), message.getArgAsFloat(1), message.getArgAsFloat(2), message.getArgAsFloat(3));
-            motor_manager_.setOrientation(q);
+//            motor_manager_.setOrientation(q);
+            stage_.setOrientation(q);
         }
     }
     motor_manager_.update();
@@ -117,18 +124,18 @@ void testApp::draw() {
 
 void testApp::keyPressed(int key) {
     float speed = ofGetKeyPressed(OF_KEY_SHIFT) ? 5 : 1;
+    bool needsUpdate = false;
     
     if (getb("selectionMode") || selected_point_ >= 0) {
         if (key == OF_KEY_LEFT || key == OF_KEY_UP || key == OF_KEY_RIGHT|| key == OF_KEY_DOWN){
-//            int choice = geti("selectionChoice");
             setb("arrowing", true);
             if (selected_point_ >= 0){
                 ofVec2f &p = selectedPoint().image;
                 switch(key) {
-                    case OF_KEY_LEFT: p.x -= 1; break;
-                    case OF_KEY_RIGHT: p.x += 1; break;
-                    case OF_KEY_UP: p.y -= 1; break;
-                    case OF_KEY_DOWN: p.y += 1; break;
+                    case OF_KEY_LEFT: p.x -= 1.0 / speed; break;
+                    case OF_KEY_RIGHT: p.x += 1.0 / speed; break;
+                    case OF_KEY_UP: p.y -= 1.0 / speed; break;
+                    case OF_KEY_DOWN: p.y += 1.0 / speed; break;
                 }
             }
         } else {
@@ -137,28 +144,28 @@ void testApp::keyPressed(int key) {
     } else {
         switch (key) {
             case OF_KEY_UP:
-                motor_manager_.setHeight(motor_manager_.getHeight() + speed);
-                stage_.boom(speed * .1);
+                stage_.boom(speed);
+                needsUpdate = true;
                 break;
             case OF_KEY_DOWN:
-                motor_manager_.setHeight(motor_manager_.getHeight() - speed);
-                stage_.boom(-speed * .1);
+                stage_.boom(-speed);
+                needsUpdate = true;
                 break;
             case 'n':
-                roll_ -= speed;
-                applyOrientation();
+                stage_.roll(-speed);
+                needsUpdate = true;
                 break;
             case 'h':
-                roll_ += speed;
-                applyOrientation();
+                stage_.roll(speed);
+                needsUpdate = true;
                 break;
             case 'c':
-                pitch_ -= speed;
-                applyOrientation();
+                stage_.tilt(-speed);
+                needsUpdate = true;
                 break;
             case 't':
-                pitch_ += speed;
-                applyOrientation();
+                stage_.tilt(speed);
+                needsUpdate = true;
                 break;
         }
     }
@@ -210,21 +217,22 @@ void testApp::keyPressed(int key) {
         case 'o':
         case 's':
             motor_manager_.initOrigin();
-            stage_.setPosition(0, 0, 0);
-            roll_ = pitch_ = 0;
-            applyOrientation();
+            stage_.resetTransform();
+            needsUpdate = true;
             break;
         case 'a':
             motor_manager_.reset();
-            stage_.setPosition(0, 0, 0);
-            roll_ = pitch_ = 0;
-            applyOrientation();
+            stage_.resetTransform();
+            needsUpdate = true;
             break;
         
         case '5':
-            motor_manager_.setHeight(500);
             stage_.setPosition(0, 500, 0);
+            needsUpdate = true;
             break;
+    }
+    if (needsUpdate) {
+        motor_manager_.setTransformMatrix(stage_.getGlobalTransformMatrix());
     }
 }
 
@@ -266,7 +274,6 @@ void testApp::setupMesh() {
         ofMesh m = model_.getMesh(i);
         CalibrationMesh *mesh = new CalibrationMesh(m);
         calibration_meshes_.push_back(mesh);
-        ofLog(OF_LOG_VERBOSE, "%d: %d", i, m.getNumVertices());
         if (m.getNumVertices() > 20) {
             mesh->setParent(stage_);
         }
@@ -295,9 +302,6 @@ void testApp::setupMesh() {
 
 void testApp::render() {
     ofPushMatrix();
-//    ofTranslate(0, motor_manager_.getHeight() / 10.f, 0);
-//    ofMatrix4x4 m(motor_manager_.orientation_);
-//    ofMultMatrix(m);
     
     ofDrawAxis(10);
     
@@ -357,7 +361,6 @@ void testApp::render() {
 			glCullFace(GL_BACK);
             for (int i = 0; i < calibration_meshes_.size(); i++) {
                 calibration_meshes_[i]->draw();
-//                calibration_meshes_[i]->object_mesh.drawFaces();
             }
 //			if (useShader) shader.end();
 			break;

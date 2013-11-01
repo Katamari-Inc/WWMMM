@@ -37,13 +37,13 @@ namespace boost {
 
 
 class CalibrationPoint {
-  public:
+public:
     CalibrationPoint() : enabled(false) {}
     ofVec3f object;
     ofVec2f image;
     bool enabled;
     
-  private:
+private:
 #ifdef USE_BOOST_SERIALIZATION
     friend class boost::serialization::access;
     template<class Archive>
@@ -55,7 +55,7 @@ class CalibrationPoint {
 
 
 class CalibrationMesh : public ofNode {
-  public:
+public:
     CalibrationMesh(ofMesh &mesh) : useTexture(false) {
         object_mesh = mesh;
         int n = object_mesh.getNumVertices();
@@ -93,7 +93,7 @@ class CalibrationMesh : public ofNode {
     ofImage texture;
     ofColor color;
     
-  private:
+private:
 #ifdef USE_BOOST_SERIALIZATION
     friend class boost::serialization::access;
     template<class Archive>
@@ -105,14 +105,14 @@ class CalibrationMesh : public ofNode {
 
 
 class testApp : public ofBaseApp {
-  public:
+public:
 	void setb(string name, bool value);
 	void seti(string name, int value);
 	void setf(string name, float value);
 	bool getb(string name);
 	int geti(string name);
 	float getf(string name);
-
+    
     inline CalibrationMesh *selectedMesh() {
         return calibration_meshes_[selected_mesh_];
     }
@@ -122,7 +122,7 @@ class testApp : public ofBaseApp {
 	
 	void setup();
 	void update();
-	void draw();	
+	void draw();
 	void keyPressed(int key);
     void mouseMoved(int x, int y);
 	void mousePressed(int x, int y, int button);
@@ -142,14 +142,14 @@ class testApp : public ofBaseApp {
     
     
 	ofxAutoControlPanel panel;
-
+    
 	ofxAssimpModelLoader model_;
 	ofEasyCam camera_;
     vector<CalibrationMesh*> calibration_meshes_;
     ofNode stage_;
     ofImage floor_texture_;
     ofImage ocean_texture_;
-
+    
     int selected_mesh_;
     int selected_point_;
     int hovering_mesh_;
@@ -161,21 +161,10 @@ class testApp : public ofBaseApp {
 	ofxCv::Intrinsics intrinsics_;
 	bool calibration_ready_;
 	
-//	Poco::Timestamp lastFragTimestamp, lastVertTimestamp;
-//	ofShader shader;
-  
-    MotorManager motor_manager_;
-    float pitch_;
-    float roll_;
+    //	Poco::Timestamp lastFragTimestamp, lastVertTimestamp;
+    //	ofShader shader;
     
-    void applyOrientation() {
-        ofQuaternion qp, qr;
-        qp.makeRotate(pitch_, 1, 0, 0);
-        qr.makeRotate(roll_, 0, 0, 1);
-        qp *= qr;
-        motor_manager_.setOrientation(qp);
-        stage_.setOrientation(qp);
-    }
+    MotorManager motor_manager_;
     
     ofxOscReceiver osc_receiver_;
 };
