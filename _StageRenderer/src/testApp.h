@@ -4,6 +4,7 @@
 #include "ofxAssimpModelLoader.h"
 #include "ofxFPSCam.h"
 #include "ofxOsc.h"
+#include "ofxGui.h"
 
 class testApp : public ofBaseApp {
     
@@ -30,8 +31,12 @@ public:
     ofMesh ocean_;
     ofImage floors_texture_;
     ofImage ocean_texture_;
+    ofMatrix4x4 stage_transform_matrix_;
     
     ofIcoSpherePrimitive ball_;
     
     ofxOscReceiver receiver_;
+    
+    ofxPanel panel_;
+    ofxFloatSlider rotation_;
 };

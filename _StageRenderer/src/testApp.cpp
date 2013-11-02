@@ -23,6 +23,9 @@ void testApp::setup() {
     ball_.setPosition(0, 0, 0);
     
     receiver_.setup(8001);
+    
+    panel_.setup("Hoge");
+    panel_.add(rotation_.setup("Rotation", 1.0f, 0.0f, 1.0f));
 }
 
 //--------------------------------------------------------------
@@ -37,6 +40,10 @@ void testApp::update() {
             ball_.setPosition(message.getArgAsFloat(0) * .3, message.getArgAsFloat(1) * .3, message.getArgAsFloat(2) * .3);
         } else if (address == "/ball/orientation") {
             ball_.setOrientation(ofQuaternion(message.getArgAsFloat(0), message.getArgAsFloat(1), message.getArgAsFloat(2), message.getArgAsFloat(3)));
+        } else if (address == "/world/orientation") {
+            ofQuaternion q(message.getArgAsFloat(0), message.getArgAsFloat(1), message.getArgAsFloat(2), message.getArgAsFloat(3));
+            q.slerp(rotation_, ofQuaternion(), q);
+            stage_transform_matrix_.makeRotationMatrix(q);
         }
     }
 }
@@ -45,6 +52,8 @@ void testApp::update() {
 void testApp::draw() {
     ofBackground(128);
     
+    ofVec3f p = ball_.getPosition() * stage_transform_matrix_;
+
     ofEnableDepthTest();
     camera_.begin();
     ofDrawAxis(100);
@@ -53,7 +62,9 @@ void testApp::draw() {
     ocean_.drawFaces();
     ocean_texture_.unbind();
     
-    //  ofTranslate(0, sin(ofGetElapsedTimef()) * 200, 0);
+    ofPushMatrix();
+    ofTranslate(0, -p.y + 50, 0);
+    ofMultMatrix(stage_transform_matrix_);
     
     ofPushStyle();
     ofSetColor(64, 148, 65);
@@ -72,6 +83,8 @@ void testApp::draw() {
     floors_texture_.unbind();
     glDisable(GL_POLYGON_OFFSET_FILL);
     
+//    ofPopMatrix();
+    
     ofPushStyle();
     ofNoFill();
     ofSetColor(255, 0, 0);
@@ -82,14 +95,20 @@ void testApp::draw() {
     ofPopMatrix();
     ofPopStyle();
     
+    ofPopMatrix();
+    
     camera_.end();
     
-    stringstream s;
-    ofVec3f p = ball_.getPosition();
-    s << "X: " << ofToString(p.x, 2) << endl
-    << "Y: " << ofToString(p.y, 2) << endl
-    << "Y: " << ofToString(p.z, 2);
-    ofDrawBitmapStringHighlight(s.str(), 10, 20);
+    ofDisableDepthTest();
+    panel_.draw();
+
+    
+//    stringstream s;
+//    ofVec3f p = ball_.getPosition();
+//    s << "X: " << ofToString(p.x, 2) << endl
+//    << "Y: " << ofToString(p.y, 2) << endl
+//    << "Y: " << ofToString(p.z, 2);
+//    ofDrawBitmapStringHighlight(s.str(), 10, 20);
 }
 
 //--------------------------------------------------------------
