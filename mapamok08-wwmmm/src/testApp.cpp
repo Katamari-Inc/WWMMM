@@ -292,7 +292,7 @@ void testApp::setupMesh() {
         }
     }
     
-//    ofstream ofs("tetete.dat");
+//    ofstream ofs(ofToDataPath("tetete.dat").c_str());
 //    boost::archive::text_oarchive oa(ofs);
 //    oa << calibration_meshes_;
 //    ofs.close();
@@ -433,96 +433,73 @@ void testApp::saveCalibration() {
 	Mat eulerMat = (Mat_<double>(3,1) << euler.x, euler.y, euler.z);
 	fs << "euler" << eulerMat;
 	
-	ofFile basic("calibration-basic.txt", ofFile::WriteOnly);
-	ofVec3f position( translation_vector_.at<double>(1), translation_vector_.at<double>(2));
-	basic << "position (in world units):" << endl;
-	basic << "\tx: " << ofToString(translation_vector_.at<double>(0), 2) << endl;
-	basic << "\ty: " << ofToString(translation_vector_.at<double>(1), 2) << endl;
-	basic << "\tz: " << ofToString(translation_vector_.at<double>(2), 2) << endl;
-	basic << "axis-angle rotation (in degrees):" << endl;
-	basic << "\taxis x: " << ofToString(axis.x, 2) << endl;
-	basic << "\taxis y: " << ofToString(axis.y, 2) << endl;
-	basic << "\taxis z: " << ofToString(axis.z, 2) << endl;
-	basic << "\tangle: " << ofToString(rotationAngleDegrees, 2) << endl;
-	basic << "euler rotation (in degrees):" << endl;
-	basic << "\tx: " << ofToString(euler.x, 2) << endl;
-	basic << "\ty: " << ofToString(euler.y, 2) << endl;
-	basic << "\tz: " << ofToString(euler.z, 2) << endl;
-	basic << "fov (in degrees):" << endl;
-	basic << "\thorizontal: " << ofToString(fov.x, 2) << endl;
-	basic << "\tvertical: " << ofToString(fov.y, 2) << endl;
-	basic << "principal point (in screen units):" << endl;
-	basic << "\tx: " << ofToString(principalPoint.x, 2) << endl;
-	basic << "\ty: " << ofToString(principalPoint.y, 2) << endl;
-	basic << "image size (in pixels):" << endl;
-	basic << "\tx: " << ofToString(principalPoint.x, 2) << endl;
-	basic << "\ty: " << ofToString(principalPoint.y, 2) << endl;
+//	ofFile basic("calibration-basic.txt", ofFile::WriteOnly);
+//	ofVec3f position( translation_vector_.at<double>(1), translation_vector_.at<double>(2));
+//	basic << "position (in world units):" << endl;
+//	basic << "\tx: " << ofToString(translation_vector_.at<double>(0), 2) << endl;
+//	basic << "\ty: " << ofToString(translation_vector_.at<double>(1), 2) << endl;
+//	basic << "\tz: " << ofToString(translation_vector_.at<double>(2), 2) << endl;
+//	basic << "axis-angle rotation (in degrees):" << endl;
+//	basic << "\taxis x: " << ofToString(axis.x, 2) << endl;
+//	basic << "\taxis y: " << ofToString(axis.y, 2) << endl;
+//	basic << "\taxis z: " << ofToString(axis.z, 2) << endl;
+//	basic << "\tangle: " << ofToString(rotationAngleDegrees, 2) << endl;
+//	basic << "euler rotation (in degrees):" << endl;
+//	basic << "\tx: " << ofToString(euler.x, 2) << endl;
+//	basic << "\ty: " << ofToString(euler.y, 2) << endl;
+//	basic << "\tz: " << ofToString(euler.z, 2) << endl;
+//	basic << "fov (in degrees):" << endl;
+//	basic << "\thorizontal: " << ofToString(fov.x, 2) << endl;
+//	basic << "\tvertical: " << ofToString(fov.y, 2) << endl;
+//	basic << "principal point (in screen units):" << endl;
+//	basic << "\tx: " << ofToString(principalPoint.x, 2) << endl;
+//	basic << "\ty: " << ofToString(principalPoint.y, 2) << endl;
+//	basic << "image size (in pixels):" << endl;
+//	basic << "\tx: " << ofToString(principalPoint.x, 2) << endl;
+//	basic << "\ty: " << ofToString(principalPoint.y, 2) << endl;
 	
-//	saveMat(Mat(object_points_), dirName + "objectPoints.yml");
-//	saveMat(Mat(image_points_), dirName + "imagePoints.yml");
+    ofstream ofs(ofToDataPath(dirName + "object-points.dat").c_str());
+    boost::archive::text_oarchive oa(ofs);
+    for (int i = 0; i < calibration_meshes_.size(); i++) {
+        oa << *calibration_meshes_[i];
+    }
+    ofs.close();
 }
 
 
 void testApp::loadCalibration() {
-//    
-//    // retrieve advanced calibration folder
-//    
-//    ofFileDialogResult result = ofSystemLoadDialog("Select a calibration folder", true, ofToDataPath("", true));
-//    if (!result.bSuccess) return;
-//    string data_dir = result.getPath();
-//    
-//    // load objectPoints and imagePoints
-//    
-//    Mat objPointsMat, imgPointsMat;
-//    loadMat( objPointsMat, data_dir + "/objectPoints.yml");
-//    loadMat( imgPointsMat, data_dir + "/imagePoints.yml");
-//    
-//    int numVals;
-//    float x, y, z;
-//    cv::Point3f oP;
-//    
-//    const float* objVals = objPointsMat.ptr<float>(0);
-//    numVals = objPointsMat.cols * objPointsMat.rows * 3;
-//    
-//    for (int i = 0; i < numVals; i+=3) {
-//        oP.x = objVals[i];
-//        oP.y = objVals[i+1];
-//        oP.z = objVals[i+2];
-//        object_points_[i/3] = oP;
-//    }
-//    
-//    cv::Point2f iP;
-//    
-//    reference_points_.resize(imgPointsMat.cols * imgPointsMat.rows, false);
-//    
-//    const float* imgVals = imgPointsMat.ptr<float>(0);
-//    numVals = objPointsMat.cols * objPointsMat.rows * 2;
-//    for (int i = 0; i < numVals; i+=2) {
-//        iP.x = imgVals[i];
-//        iP.y = imgVals[i+1];
-//        if (iP.x != 0 && iP.y != 0) {
-//            reference_points_[i/2] = true;
-//        }
-//        image_points_[i/2] = iP;
-//    }
-//    
-//    
-//    // load the calibration-advanced yml
-//    
-//    FileStorage fs(ofToDataPath(data_dir + "/calibration-advanced.yml", true), FileStorage::READ);
-//    
-//    Mat cameraMatrix;
-//    Size2i imageSize;
-//    fs["cameraMatrix"] >> cameraMatrix;
-//    fs["imageSize"][0] >> imageSize.width;
-//    fs["imageSize"][1] >> imageSize.height;
-//    fs["rotationVector"] >> rotation_vector_;
-//    fs["translationVector"] >> translation_vector_;
-//    
-//    intrinsics_.setup(cameraMatrix, imageSize);
-//    model_matrix_ = makeMatrix(rotation_vector_, translation_vector_);
-//    
-//    calibration_ready_ = true;
+    
+    // retrieve advanced calibration folder
+    
+    ofFileDialogResult result = ofSystemLoadDialog("Select a calibration folder", true, ofToDataPath("", true));
+    if (!result.bSuccess) return;
+    string data_dir = result.getPath() + "/";
+    
+    // load objectPoints and imagePoints
+
+    ifstream ifs(ofToDataPath(data_dir + "object-points.dat").c_str());
+    boost::archive::text_iarchive ia(ifs);
+    for (int i = 0; i < calibration_meshes_.size(); i++) {
+        ia >> *calibration_meshes_[i];
+    }
+    ifs.close();
+    
+    // load the calibration-advanced yml
+    
+    FileStorage fs(ofToDataPath(data_dir + "calibration-advanced.yml", true), FileStorage::READ);
+    
+    Mat cameraMatrix;
+    Size2i imageSize;
+    fs["cameraMatrix"] >> cameraMatrix;
+    fs["imageSize"][0] >> imageSize.width;
+    fs["imageSize"][1] >> imageSize.height;
+    fs["rotationVector"] >> rotation_vector_;
+    fs["translationVector"] >> translation_vector_;
+    
+    intrinsics_.setup(cameraMatrix, imageSize);
+    model_matrix_ = makeMatrix(rotation_vector_, translation_vector_);
+    
+    calibration_ready_ = true;
 }
 
 

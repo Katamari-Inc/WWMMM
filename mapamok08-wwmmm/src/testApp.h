@@ -1,14 +1,5 @@
 #pragma once
 
-//#define USE_BOOST_SERIALIZATION
-
-#ifdef USE_BUSE_BOOST_SERIALIZATION
-#include <boost/serialization/serialization.hpp>
-#include <boost/serialization/vector.hpp>
-#include <boost/archive/text_oarchive.hpp>
-#include <boost/archive/text_iarchive.hpp>
-#endif
-
 #include "ofMain.h"
 #include "ofxCv.h"
 #include "ofxAssimpModelLoader.h"
@@ -19,8 +10,12 @@
 #include "pystring.h"
 #include "MotorManager.h"
 
+#include "boost/serialization/serialization.hpp"
+#include "boost/serialization/vector.hpp"
+#include "boost/archive/text_oarchive.hpp"
+#include "boost/archive/text_iarchive.hpp"
 
-#ifdef USE_BOOST_SERIALIZATION
+
 namespace boost {
     namespace serialization {
         template <class Archive>
@@ -33,7 +28,6 @@ namespace boost {
         }
     }
 }
-#endif
 
 
 class CalibrationPoint {
@@ -44,13 +38,11 @@ public:
     bool enabled;
     
 private:
-#ifdef USE_BOOST_SERIALIZATION
     friend class boost::serialization::access;
     template<class Archive>
     void serialize(Archive &archive, unsigned int version) {
-        archive & enabled;
+        archive & object & image & enabled;
     }
-#endif
 };
 
 
@@ -94,13 +86,11 @@ public:
     ofColor color;
     
 private:
-#ifdef USE_BOOST_SERIALIZATION
     friend class boost::serialization::access;
     template<class Archive>
     void serialize(Archive &archive, unsigned int version) {
         archive & points;
     }
-#endif
 };
 
 
