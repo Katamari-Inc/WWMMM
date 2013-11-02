@@ -50,10 +50,10 @@ public:
                     int pos;
                     istringstream(tokens[2]) >> pos;
                     motors_[id]->current = pos;
-                    cout << "current: " << id << " = " << pos << endl;
+                    ofLog(OF_LOG_VERBOSE, "Motor(%d) = %d", id, pos);
                     is_ready_ = true;
                 } else {
-                    cout << buffer_ << endl;
+                    ofLog(OF_LOG_VERBOSE, "Unknown command: %s", buffer_);
                 }
                 bufp_ = 0;
                 buffer_[0] = NULL;
@@ -82,23 +82,9 @@ public:
         sendCommand(str.str());
     }
     
-//    void setHeight(float millimeter) {
-//        height_ = millimeter;
-//        sync();
-//    }
-//    
-//    float getHeight() {
-//        return height_;
-//    }
-    
     void move(int motor_id, float amount) {
         setPosition(motor_id, motors_[motor_id]->destination + amount);
     }
-    
-//    void setOrientation(ofQuaternion &q) {
-//        orientation_ = q;
-//        sync();
-//    }
     
     void sync() {
         ofVec3f p = ofVec3f(225, 0, 190) * matrix_;
@@ -110,15 +96,11 @@ public:
     }
     
     void initOrigin() {
-//        height_ = 0;
-//        orientation_.set(0, 0, 0, 1);
         matrix_.makeIdentityMatrix();
         sendCommand("SETHOME");
     }
     
     void reset() {
-//        height_ = 0;
-//        orientation_.set(0, 0, 0, 1);
         matrix_.makeIdentityMatrix();
         sync();
     }
@@ -135,8 +117,6 @@ public:
     int bufp_ = 0;
     
     vector<Motor*> motors_;
-    
-//    ofQuaternion orientation_;
-//    float height_;
+
     ofMatrix4x4 matrix_;
 };

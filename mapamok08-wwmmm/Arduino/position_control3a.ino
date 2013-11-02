@@ -24,7 +24,7 @@ void setup() {
   motors_[2] = new Motor(9);
 
   t = millis();
-  Serial.println("Ready");
+  Serial.println("READY");
 }
 
 void loop() {

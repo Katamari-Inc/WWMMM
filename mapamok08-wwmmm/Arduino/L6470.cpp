@@ -86,19 +86,19 @@ void L6470::init(){
 	
 	// First things first: let's check communications. The CONFIG register should
 	//  power up to 0x2E88, so we can use that to check the communications.
-	delay(1000);
 	unsigned long p = 0;
 	while (1) {
 		p = GetParam(CONFIG);
+		Serial.print("STATUS ");
 		Serial.print(_SSPin);
 		Serial.print(" ");
 		if (p == 0x2E88){
-			Serial.println("Good to go!");
+			Serial.println("OK");
 			break;
 		}else{
-			Serial.print("Comm issue...: ");
+			Serial.print("WAIT");
 			Serial.println(p, HEX);
-			delay(1000);
+			delay(10);
 			// break;
 		}
 	}
@@ -112,12 +112,6 @@ void L6470::init(){
 	//     BUSY/SYNC pin (when that pin is used for SYNC). Make it 1:1, despite
 	//     not using that pin.
 	//SetParam(STEP_MODE, !SYNC_EN | STEP_SEL_1 | SYNC_SEL_1);
-	
-	
-	SetParam(KVAL_RUN, 255);
-	SetParam(KVAL_ACC, 255);
-	SetParam(KVAL_DEC, 255);
-	SetParam(KVAL_HOLD, 128);
 
 	// Set up the CONFIG register as follows:
 	//  PWM frequency divisor = 1
@@ -135,6 +129,9 @@ void L6470::init(){
 	//  There are ACC, DEC, and HOLD KVAL registers as well; you may need to play with
 	//  those values to get acceptable performance for a given application.
 	SetParam(KVAL_RUN, 0xFF);
+	SetParam(KVAL_ACC, 0xFF);
+	SetParam(KVAL_DEC, 0xFF);
+	SetParam(KVAL_HOLD, 0x80);
 	// Calling GetStatus() clears the UVLO bit in the status register, which is set by
 	//  default on power-up. The driver may not run without that bit cleared by this
 	//  read operation.

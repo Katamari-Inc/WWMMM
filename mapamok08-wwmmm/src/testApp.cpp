@@ -115,6 +115,12 @@ void testApp::draw() {
 }
 
 
+void testApp::exit() {
+    keyPressed('a');
+    ofSleepMillis(1000);
+}
+
+
 void testApp::keyPressed(int key) {
     float speed = ofGetKeyPressed(OF_KEY_SHIFT) ? 5 : 1;
     bool needsUpdate = false;
