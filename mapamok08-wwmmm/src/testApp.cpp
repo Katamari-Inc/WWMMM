@@ -229,7 +229,12 @@ void testApp::keyPressed(int key) {
             break;
         
         case '5':
-            stage_.setPosition(0, 500, 0);
+        case '6':
+        case '7':
+        case '8':
+        case '9':
+            stage_.resetTransform();
+            stage_.setPosition(0, (key - '5' + 1) * 100, 0);
             needsUpdate = true;
             break;
     }
@@ -251,10 +256,10 @@ void testApp::mouseMoved(int x, int y) {
 void testApp::mousePressed(int x, int y, int button) {
 //	setb("selected", getb("hoverSelected"));
 //	seti("selectionChoice", geti("hoverChoice"));
+    setb("arrowing", false);
 	if (hovering_point_ >= 0) {
         selected_mesh_ = hovering_mesh_;
         selected_point_ = hovering_point_;
-        setb("arrowing", false);
 		setb("dragging", true);
 	} else {
         selected_mesh_ = -1;

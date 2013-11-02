@@ -110,6 +110,10 @@ public:
         euler_angles_.x += ofDegToRad(degrees);
         update();
     }
+    void resetTransform() {
+        ofNode::resetTransform();
+        euler_angles_.set(0);
+    }
 private:
     void update() {
 		float c1 = cos(euler_angles_.x / 2);

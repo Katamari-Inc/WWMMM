@@ -87,11 +87,11 @@ public:
     }
     
     void sync() {
-        ofVec3f p = ofVec3f(225, 0, 190) * matrix_;
+        ofVec3f p = ofVec3f(220, 0, 179.3) * matrix_;
         setPosition(1, p.y);
-        p = ofVec3f(-225, 0, 190) * matrix_;
+        p = ofVec3f(-220, 0, 179.3) * matrix_;
         setPosition(2, p.y);
-        p = ofVec3f(0, 0, -190) * matrix_;
+        p = ofVec3f(0, 0, -230.7) * matrix_;
         setPosition(0, p.y);
     }
     
