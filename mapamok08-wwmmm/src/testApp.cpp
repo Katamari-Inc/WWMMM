@@ -162,11 +162,11 @@ void testApp::keyPressed(int key) {
                 needsUpdate = true;
                 break;
             case 'c':
-                stage_.tilt(-speed);
+                stage_.pitch(-speed);
                 needsUpdate = true;
                 break;
             case 't':
-                stage_.tilt(speed);
+                stage_.pitch(speed);
                 needsUpdate = true;
                 break;
         }
@@ -296,10 +296,8 @@ void testApp::setupMesh() {
         }
     }
     
-//    ofstream ofs(ofToDataPath("tetete.dat").c_str());
-//    boost::archive::text_oarchive oa(ofs);
-//    oa << calibration_meshes_;
-//    ofs.close();
+    ball_.setResolution(0);
+    ball_.setRadius(1);
 }
 
 
