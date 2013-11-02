@@ -52,8 +52,14 @@ public:
         object_mesh = mesh;
         int n = object_mesh.getNumVertices();
         points.resize(n);
-        for (int i = 0; i < n; i++) {
+        reset();
+    }
+    
+    void reset() {
+        for (int i = 0; i < points.size(); i++) {
             points[i].object = object_mesh.getVertex(i);
+            points[i].image.set(0);
+            points[i].enabled = false;
         }
     }
     
@@ -128,6 +134,7 @@ public:
 	void render();
     void loadCalibration();
 	void saveCalibration();
+    void resetCalibration();
     float getClosestPointOnMeshes(float x, float y, int &mesh_index, int &point_index);
 	float getClosestImagePoint(float x, float y, int &mesh_index, int &point_index);
     

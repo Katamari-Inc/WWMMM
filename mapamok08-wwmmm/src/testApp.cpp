@@ -93,6 +93,10 @@ void testApp::draw() {
 		saveCalibration();
 		setb("saveCalibration", false);
 	}
+    if (getb("resetCalibration")) {
+        resetCalibration();
+        setb("resetCalibration", false);
+    }
 	if (getb("selectionMode")) {
 		drawSelectionMode();
 	} else {
@@ -503,6 +507,14 @@ void testApp::loadCalibration() {
 }
 
 
+void testApp::resetCalibration() {
+    for (auto it = calibration_meshes_.begin(); it != calibration_meshes_.end(); it++) {
+        (*it)->reset();
+        calibration_ready_ = false;
+    }
+}
+
+
 void testApp::setupControlPanel() {
 	panel.setup("mapamokWWMMM", 10, 10, 300, 600);
     //	panel.msg = "tab hides the panel, space toggles render/selection mode, 'f' toggles fullscreen.";
@@ -524,6 +536,7 @@ void testApp::setupControlPanel() {
     panel.addMultiToggle("shading", "shading", 0, shaderNames );
 	panel.addToggle("loadCalibration", "loadCalibration", false);
 	panel.addToggle("saveCalibration", "saveCalibration", false);
+	panel.addToggle("resetCalibration", "resetCalibration", false);
 	
 	panel.addPanel("Highlight");
 	panel.addToggle("highlight", "highlight", false);
