@@ -71,11 +71,10 @@ void testApp::update() {
     if (needs_update_motor_) {
         stage_.setPosition(0, 0, 0);
         ofVec3f p = ball_.pre_jump_pos_;
-        cout << p.y << ", " << ofClamp(p.y, 40, 90) - 90 << endl;
         p.y = ofClamp(p.y, 40, 90) - 90;
         p = p * stage_.getLocalTransformMatrix();
         stage_.setPosition(0, -p.y, 0);
-//        motor_manager_.setTransformMatrix(stage_.getGlobalTransformMatrix());
+        motor_manager_.setTransformMatrix(stage_.getGlobalTransformMatrix());
         needs_update_motor_ = false;
     }
     motor_manager_.update();
