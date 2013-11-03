@@ -62,7 +62,7 @@ void testApp::update() {
         } else if (address == "/world/orientation") {
             ofQuaternion q;
             q.set(message.getArgAsFloat(0), message.getArgAsFloat(1), message.getArgAsFloat(2), message.getArgAsFloat(3));
-            q.slerp(0.2f, ofQuaternion(), q);
+            q.slerp(getf("rotationAmount"), ofQuaternion(), q);
             stage_.setOrientation(q);
             needs_update_motor_ = true;
         }
@@ -70,10 +70,12 @@ void testApp::update() {
     
     if (needs_update_motor_) {
         stage_.setPosition(0, 0, 0);
-        ofVec3f p = ball_.pre_jump_pos_;
-        p.y = ofClamp(p.y, 40, 90) - 90;
-        p = p * stage_.getLocalTransformMatrix();
-        stage_.setPosition(0, -p.y, 0);
+        if (!getb("setupMode")) {
+            ofVec3f p = ball_.pre_jump_pos_;
+            p.y = ofClamp(p.y, 40, 90) - 90;
+            p = p * stage_.getLocalTransformMatrix();
+            stage_.setPosition(0, -p.y, 0);
+        }
         motor_manager_.setTransformMatrix(stage_.getGlobalTransformMatrix());
         needs_update_motor_ = false;
     }
@@ -300,7 +302,8 @@ void testApp::setupControlPanel() {
 	panel.addPanel("Interaction");
 	panel.addToggle("setupMode", "setupMode", true);
 	panel.addSlider("scale", "scale", 1, .1, 3);
-	panel.addSlider("backgroundColor", "backgroundColor", 0, 255, true);
+	panel.addSlider("backgroundColor", "backgroundColor", 0, 0, 255, true);
+    panel.addSlider("rotationAmount", "rotationAmount", 0.2, 0, 1);
     vector<string> boxNames;
     boxNames.push_back("faces");
     boxNames.push_back("fullWireframe");
