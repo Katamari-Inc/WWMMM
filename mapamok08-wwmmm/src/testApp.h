@@ -60,6 +60,7 @@ public:
     ofImage floor_texture_;
     ofImage ocean_texture_;
     Ball ball_;
+    ofNode root_;
     
     int selected_mesh_;
     int selected_point_;
@@ -73,6 +74,7 @@ public:
 	bool calibration_ready_;
 	
     MotorManager motor_manager_;
+    bool needs_update_motor_;
     
     ofxOscReceiver osc_receiver_;
 };

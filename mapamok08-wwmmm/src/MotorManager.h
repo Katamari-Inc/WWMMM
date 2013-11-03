@@ -66,6 +66,7 @@ public:
     
     void sendCommand(string command) {
         cout << "COMMAND: " << command << endl;
+        if (!serial_.isInitialized()) return;
         serial_.writeBytes((unsigned char *)command.c_str(), command.length());
         serial_.writeByte('\n');
     }

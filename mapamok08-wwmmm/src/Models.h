@@ -53,6 +53,7 @@ public:
         float size = MAX(sceneMax.x - sceneMin.x, MAX(sceneMax.y - sceneMin.y, sceneMax.z - sceneMin.z));
         setScale(5.4 * 2 * 0.3 / size);
         ball_ = loader_.getMesh(0);
+        jumping_ = true;
     }
     
     void customDraw() {
@@ -65,4 +66,6 @@ public:
     
     ofxAssimpModelLoader loader_;
     ofMesh ball_;
+    bool jumping_;
+    ofVec3f pre_jump_pos_;
 };

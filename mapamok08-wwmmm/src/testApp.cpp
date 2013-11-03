@@ -31,6 +31,7 @@ void testApp::setup() {
         ofLog(OF_LOG_NOTICE, "Port: %s", port.c_str());
     }
     motor_manager_.setup(port);
+    needs_update_motor_ = false;
     
     osc_receiver_.setup(8001);
 }
@@ -47,12 +48,35 @@ void testApp::update() {
     while (osc_receiver_.hasWaitingMessages()) {
         ofxOscMessage message;
         osc_receiver_.getNextMessage(&message);
-        if (message.getAddress() == "/world/orientation") {
+        string address = message.getAddress();
+        if (address == "/ball/position") {
+            ball_.setPosition(message.getArgAsFloat(0) * .3, message.getArgAsFloat(1) * .3 + 10, message.getArgAsFloat(2) * .3);
+            if (!ball_.jumping_) {
+                ball_.pre_jump_pos_.set(ball_.getPosition());
+            }
+            needs_update_motor_ = true;
+        } else if (address == "/ball/orientation") {
+            ball_.setOrientation(ofQuaternion(message.getArgAsFloat(0), message.getArgAsFloat(1), message.getArgAsFloat(2), message.getArgAsFloat(3)));
+        } else if (address == "/ball/jumping") {
+            ball_.jumping_ = message.getArgAsInt32(0);
+        } else if (address == "/world/orientation") {
             ofQuaternion q;
             q.set(message.getArgAsFloat(0), message.getArgAsFloat(1), message.getArgAsFloat(2), message.getArgAsFloat(3));
+            q.slerp(0.2f, ofQuaternion(), q);
             stage_.setOrientation(q);
-            motor_manager_.setTransformMatrix(stage_.getGlobalTransformMatrix());
+            needs_update_motor_ = true;
         }
+    }
+    
+    if (needs_update_motor_) {
+        stage_.setPosition(0, 0, 0);
+        ofVec3f p = ball_.pre_jump_pos_;
+        cout << p.y << ", " << ofClamp(p.y, 40, 90) - 90 << endl;
+        p.y = ofClamp(p.y, 40, 90) - 90;
+        p = p * stage_.getLocalTransformMatrix();
+        stage_.setPosition(0, -p.y, 0);
+//        motor_manager_.setTransformMatrix(stage_.getGlobalTransformMatrix());
+        needs_update_motor_ = false;
     }
     motor_manager_.update();
 }
@@ -88,7 +112,6 @@ void testApp::exit() {
 
 void testApp::keyPressed(int key) {
     float speed = ofGetKeyPressed(OF_KEY_SHIFT) ? 5 : 1;
-    bool needsUpdate = false;
     
     setb("arrowing",false);
     if (getb("selectionMode") || selected_point_ >= 0) {
@@ -107,28 +130,28 @@ void testApp::keyPressed(int key) {
     } else {
         switch (key) {
             case OF_KEY_UP:
-                stage_.boom(speed);
-                needsUpdate = true;
+                root_.boom(speed);
+                needs_update_motor_ = true;
                 break;
             case OF_KEY_DOWN:
-                stage_.boom(-speed);
-                needsUpdate = true;
+                root_.boom(-speed);
+                needs_update_motor_ = true;
                 break;
             case 'n':
                 stage_.roll(-speed);
-                needsUpdate = true;
+                needs_update_motor_ = true;
                 break;
             case 'h':
                 stage_.roll(speed);
-                needsUpdate = true;
+                needs_update_motor_ = true;
                 break;
             case 'c':
                 stage_.pitch(-speed);
-                needsUpdate = true;
+                needs_update_motor_ = true;
                 break;
             case 't':
                 stage_.pitch(speed);
-                needsUpdate = true;
+                needs_update_motor_ = true;
                 break;
         }
     }
@@ -181,12 +204,14 @@ void testApp::keyPressed(int key) {
         case 's':
             motor_manager_.initOrigin();
             stage_.resetTransform();
-            needsUpdate = true;
+            root_.resetTransform();
+            needs_update_motor_ = true;
             break;
         case 'a':
             motor_manager_.reset();
             stage_.resetTransform();
-            needsUpdate = true;
+            root_.resetTransform();
+            needs_update_motor_ = true;
             break;
         
         case '5':
@@ -195,12 +220,9 @@ void testApp::keyPressed(int key) {
         case '8':
         case '9':
             stage_.resetTransform();
-            stage_.setPosition(0, (key - '5' + 1) * 100, 0);
-            needsUpdate = true;
+            root_.setPosition(0, (key - '5' + 1) * 100, 0);
+            needs_update_motor_ = true;
             break;
-    }
-    if (needsUpdate) {
-        motor_manager_.setTransformMatrix(stage_.getGlobalTransformMatrix());
     }
 }
 
@@ -266,6 +288,9 @@ void testApp::setupMesh() {
     }
     
     ball_.setup();
+    ball_.setParent(stage_);
+    
+    stage_.setParent(root_);
 }
 
 
@@ -307,7 +332,7 @@ void testApp::setupControlPanel() {
 	panel.addToggle("CV_CALIB_FIX_PRINCIPAL_POINT", "CV_CALIB_FIX_PRINCIPAL_POINT", false);
 	
 	panel.addPanel("Rendering");
-	panel.addSlider("lineWidth", "lineWidth", 2, 1, 8, true);
+	panel.addSlider("lineWidth", "lineWidth", 1, 1, 8, true);
 //	panel.addToggle("useSmoothing", "useSmoothing", false);
 //	panel.addToggle("useFog", "useFog", false);
 //	panel.addSlider("fogNear", "fogNear", 200, 0, 1000);
@@ -524,11 +549,12 @@ void testApp::render() {
 	ofColor transparentBlack(0, 0, 0, 0);
 	switch(geti("drawMode")) {
 		case 0: // faces
-			glEnable(GL_CULL_FACE);
-			glCullFace(GL_BACK);
+//			glEnable(GL_CULL_FACE);
+//			glCullFace(GL_BACK);
             for (int i = 0; i < calibration_meshes_.size(); i++) {
                 calibration_meshes_[i]->draw();
             }
+            ball_.draw();
 			break;
 		case 1: // fullWireframe
             for (int i = 0; i < calibration_meshes_.size(); i++) {
@@ -546,6 +572,7 @@ void testApp::render() {
                 LineArt::draw(calibration_meshes_[i]->object_mesh, false, transparentBlack, NULL);
                 calibration_meshes_[i]->restoreTransformGL();
             }
+            ball_.draw();
 			break;
 	}
 
