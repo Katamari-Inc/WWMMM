@@ -41,7 +41,7 @@ public:
 	void setupControlPanel();
 	void setupMesh();
 	void drawLabeledPoint(int label, ofVec2f position, ofColor color, ofColor bg = ofColor::black, ofColor fg = ofColor::white);
-	void updateRenderMode();
+	void calibrateWithReferencePoints();
 	void drawSelectionMode();
 	void drawRenderMode();
 	void render();
@@ -60,7 +60,7 @@ public:
     Stage stage_;
     ofImage floor_texture_;
     ofImage ocean_texture_;
-    ofIcoSpherePrimitive ball_;
+    Ball ball_;
     
     int selected_mesh_;
     int selected_point_;

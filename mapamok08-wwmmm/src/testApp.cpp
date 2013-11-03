@@ -5,25 +5,7 @@ using namespace ofxCv;
 using namespace cv;
 
 
-inline void testApp::setb(string name, bool value) {
-	panel.setValueB(name, value);
-}
-inline void testApp::seti(string name, int value) {
-	panel.setValueI(name, value);
-}
-inline void testApp::setf(string name, float value) {
-	panel.setValueF(name, value);
-}
-inline bool testApp::getb(string name) {
-	return panel.getValueB(name);
-}
-inline int testApp::geti(string name) {
-	return panel.getValueI(name);
-}
-inline float testApp::getf(string name) {
-	return panel.getValueF(name);
-}
-
+#pragma mark - oF Event Handlers
 
 void testApp::setup() {
     ofSetLogLevel(OF_LOG_VERBOSE);
@@ -65,7 +47,7 @@ void testApp::update() {
 	if (getb("selectionMode")) {
         camera_.enableMouseInput();
 	} else {
-		updateRenderMode();
+		calibrateWithReferencePoints();
 		camera_.disableMouseInput();
 	}
     
@@ -273,6 +255,9 @@ void testApp::mouseReleased(int x, int y, int button) {
 }
 
 
+//--------------------------------------------------------------------------------------------------
+#pragma mark - Setup
+
 void testApp::setupMesh() {
 	if (!model_.loadModel("stage.obj")) {
         ofExit(1);
@@ -301,10 +286,250 @@ void testApp::setupMesh() {
         }
     }
     
-    ball_.setResolution(0);
-    ball_.setRadius(1);
+    ball_.setup();
 }
 
+
+void testApp::setupControlPanel() {
+	panel.setup("mapamokWWMMM", 10, 10, 300, 600);
+    //	panel.msg = "tab hides the panel, space toggles render/selection mode, 'f' toggles fullscreen.";
+	
+	panel.addPanel("Interaction");
+	panel.addToggle("setupMode", "setupMode", true);
+	panel.addSlider("scale", "scale", 1, .1, 3);
+	panel.addSlider("backgroundColor", "backgroundColor", 0, 255, true);
+    vector<string> boxNames;
+    boxNames.push_back("faces");
+    boxNames.push_back("fullWireframe");
+    boxNames.push_back("outlineWireframe");
+    boxNames.push_back("occludedWireframe");
+    panel.addMultiToggle("drawMode", "drawMode", 3, boxNames );
+    vector<string> shaderNames;
+    shaderNames.push_back("none");
+    shaderNames.push_back("lights");
+    shaderNames.push_back("shader");
+    panel.addMultiToggle("shading", "shading", 0, shaderNames );
+	panel.addToggle("loadCalibration", "loadCalibration", false);
+	panel.addToggle("saveCalibration", "saveCalibration", false);
+	panel.addToggle("resetCalibration", "resetCalibration", false);
+	
+	panel.addPanel("Highlight");
+	panel.addToggle("highlight", "highlight", false);
+	panel.addSlider("highlightPosition", "highlightPosition", 0, 0, 1);
+	panel.addSlider("highlightOffset", "highlightOffset", .1, 0, 1);
+	
+	panel.addPanel("Calibration");
+	panel.addSlider("aov", "aov", 80, 50, 100);
+	panel.addToggle("CV_CALIB_FIX_ASPECT_RATIO", "CV_CALIB_FIX_ASPECT_RATIO", true);
+	panel.addToggle("CV_CALIB_FIX_K1", "CV_CALIB_FIX_K1", true);
+	panel.addToggle("CV_CALIB_FIX_K2", "CV_CALIB_FIX_K2", true);
+	panel.addToggle("CV_CALIB_FIX_K3", "CV_CALIB_FIX_K3", true);
+	panel.addToggle("CV_CALIB_ZERO_TANGENT_DIST", "CV_CALIB_ZERO_TANGENT_DIST", true);
+	panel.addToggle("CV_CALIB_FIX_PRINCIPAL_POINT", "CV_CALIB_FIX_PRINCIPAL_POINT", false);
+	
+	panel.addPanel("Rendering");
+	panel.addSlider("lineWidth", "lineWidth", 2, 1, 8, true);
+	panel.addToggle("useSmoothing", "useSmoothing", false);
+	panel.addToggle("useFog", "useFog", false);
+	panel.addSlider("fogNear", "fogNear", 200, 0, 1000);
+	panel.addSlider("fogFar", "fogFar", 1850, 0, 2500);
+	panel.addSlider("screenPointSize", "screenPointSize", 2, 1, 16, true);
+	panel.addSlider("selectedPointSize", "selectedPointSize", 8, 1, 16, true);
+	panel.addSlider("selectionRadius", "selectionRadius", 12, 1, 32);
+	panel.addSlider("lightX", "lightX", 200, -1000, 1000);
+	panel.addSlider("lightY", "lightY", 400, -1000, 1000);
+	panel.addSlider("lightZ", "lightZ", 800, -1000, 1000);
+	panel.addToggle("randomLighting", "randomLighting", false);
+	
+	panel.addPanel("Internal");
+	panel.addToggle("validShader", "validShader", true);
+	panel.addToggle("selectionMode", "selectionMode", true);
+	panel.addToggle("hoverSelected", "hoverSelected", false);
+    //	panel.addSlider("hoverChoice", "hoverChoice", 0, 0, object_points_.size(), true);
+    //	panel.addToggle("selected", "selected", false);
+	panel.addToggle("dragging", "dragging", false);
+	panel.addToggle("arrowing", "arrowing", false);
+    //	panel.addSlider("selectionChoice", "selectionChoice", 0, 0, object_points_.size(), true);
+	panel.addSlider("slowLerpRate", "slowLerpRate", .001, 0, .01);
+	panel.addSlider("fastLerpRate", "fastLerpRate", 1, 0, 1);
+}
+
+
+//--------------------------------------------------------------------------------------------------
+#pragma mark - Calibration
+
+void testApp::calibrateWithReferencePoints() {
+	// generate camera matrix given aov guess
+	float aov = getf("aov");
+	Size2i image_size(ofGetWidth(), ofGetHeight());
+	float f = image_size.width * ofDegToRad(aov); // i think this is wrong, but it's optimized out anyway
+	Point2f c = Point2f(image_size) * (1. / 2);
+	Mat1d camera_matrix = (Mat1d(3, 3) <<
+                           f, 0, c.x,
+                           0, f, c.y,
+                           0, 0, 1);
+    
+	// generate flags
+#define getFlag(flag) (panel.getValueB((#flag)) ? flag : 0)
+	int flags =
+    CV_CALIB_USE_INTRINSIC_GUESS |
+    getFlag(CV_CALIB_FIX_PRINCIPAL_POINT) |
+    getFlag(CV_CALIB_FIX_ASPECT_RATIO) |
+    getFlag(CV_CALIB_FIX_K1) |
+    getFlag(CV_CALIB_FIX_K2) |
+    getFlag(CV_CALIB_FIX_K3) |
+    getFlag(CV_CALIB_ZERO_TANGENT_DIST);
+	
+	vector<vector<Point3f> > reference_object_points(1);
+	vector<vector<Point2f> > reference_image_points(1);
+    for (int j = 0; j < calibration_meshes_.size(); j++) {
+        CalibrationMesh *m = calibration_meshes_[j];
+        int n = m->points.size();
+        for (int i = 0; i < n; i++) {
+            CalibrationPoint &p = m->points[i];
+            if (p.enabled) {
+                reference_object_points[0].push_back(toCv(p.object));
+                reference_image_points[0].push_back(toCv(p.image));
+            }
+        }
+    }
+	const static int min_points = 6;
+	if (reference_object_points[0].size() >= min_points) {
+        vector<Mat> rvecs, tvecs;
+        Mat distCoeffs;
+		calibrateCamera(reference_object_points, reference_image_points, image_size, camera_matrix, distCoeffs, rvecs, tvecs, flags);
+		rotation_vector_ = rvecs[0];
+		translation_vector_ = tvecs[0];
+		intrinsics_.setup(camera_matrix, image_size);
+		model_matrix_ = makeMatrix(rotation_vector_, translation_vector_);
+		calibration_ready_ = true;
+	} else {
+		calibration_ready_ = false;
+	}
+}
+
+
+void testApp::saveCalibration() {
+	string dirName = "calibration-" + ofGetTimestampString() + "/";
+	ofDirectory dir(dirName);
+	dir.create();
+	
+	FileStorage fs(ofToDataPath(dirName + "calibration-advanced.yml"), FileStorage::WRITE);
+	
+	Mat cameraMatrix = intrinsics_.getCameraMatrix();
+	fs << "cameraMatrix" << cameraMatrix;
+	
+	double focalLength = intrinsics_.getFocalLength();
+	fs << "focalLength" << focalLength;
+	
+	Point2d fov = intrinsics_.getFov();
+	fs << "fov" << fov;
+	
+	Point2d principalPoint = intrinsics_.getPrincipalPoint();
+	fs << "principalPoint" << principalPoint;
+	
+	cv::Size imageSize = intrinsics_.getImageSize();
+	fs << "imageSize" << imageSize;
+	
+	fs << "translationVector" << translation_vector_;
+	fs << "rotationVector" << rotation_vector_;
+    
+	Mat rotationMatrix;
+	Rodrigues(rotation_vector_, rotationMatrix);
+	fs << "rotationMatrix" << rotationMatrix;
+	
+	double rotationAngleRadians = norm(rotation_vector_, NORM_L2);
+	double rotationAngleDegrees = ofRadToDeg(rotationAngleRadians);
+	Mat rotationAxis = rotation_vector_ / rotationAngleRadians;
+	fs << "rotationAngleRadians" << rotationAngleRadians;
+	fs << "rotationAngleDegrees" << rotationAngleDegrees;
+	fs << "rotationAxis" << rotationAxis;
+	
+	ofVec3f axis(rotationAxis.at<double>(0), rotationAxis.at<double>(1), rotationAxis.at<double>(2));
+	ofVec3f euler = ofQuaternion(rotationAngleDegrees, axis).getEuler();
+	Mat eulerMat = (Mat_<double>(3,1) << euler.x, euler.y, euler.z);
+	fs << "euler" << eulerMat;
+	
+    //	ofFile basic("calibration-basic.txt", ofFile::WriteOnly);
+    //	ofVec3f position( translation_vector_.at<double>(1), translation_vector_.at<double>(2));
+    //	basic << "position (in world units):" << endl;
+    //	basic << "\tx: " << ofToString(translation_vector_.at<double>(0), 2) << endl;
+    //	basic << "\ty: " << ofToString(translation_vector_.at<double>(1), 2) << endl;
+    //	basic << "\tz: " << ofToString(translation_vector_.at<double>(2), 2) << endl;
+    //	basic << "axis-angle rotation (in degrees):" << endl;
+    //	basic << "\taxis x: " << ofToString(axis.x, 2) << endl;
+    //	basic << "\taxis y: " << ofToString(axis.y, 2) << endl;
+    //	basic << "\taxis z: " << ofToString(axis.z, 2) << endl;
+    //	basic << "\tangle: " << ofToString(rotationAngleDegrees, 2) << endl;
+    //	basic << "euler rotation (in degrees):" << endl;
+    //	basic << "\tx: " << ofToString(euler.x, 2) << endl;
+    //	basic << "\ty: " << ofToString(euler.y, 2) << endl;
+    //	basic << "\tz: " << ofToString(euler.z, 2) << endl;
+    //	basic << "fov (in degrees):" << endl;
+    //	basic << "\thorizontal: " << ofToString(fov.x, 2) << endl;
+    //	basic << "\tvertical: " << ofToString(fov.y, 2) << endl;
+    //	basic << "principal point (in screen units):" << endl;
+    //	basic << "\tx: " << ofToString(principalPoint.x, 2) << endl;
+    //	basic << "\ty: " << ofToString(principalPoint.y, 2) << endl;
+    //	basic << "image size (in pixels):" << endl;
+    //	basic << "\tx: " << ofToString(principalPoint.x, 2) << endl;
+    //	basic << "\ty: " << ofToString(principalPoint.y, 2) << endl;
+	
+    ofstream ofs(ofToDataPath(dirName + "object-points.dat").c_str());
+    boost::archive::text_oarchive oa(ofs);
+    for (int i = 0; i < calibration_meshes_.size(); i++) {
+        oa << *calibration_meshes_[i];
+    }
+    ofs.close();
+}
+
+
+void testApp::loadCalibration() {
+    
+    // retrieve advanced calibration folder
+    
+    ofFileDialogResult result = ofSystemLoadDialog("Select a calibration folder", true, ofToDataPath("", true));
+    if (!result.bSuccess) return;
+    string data_dir = result.getPath() + "/";
+    
+    // load objectPoints and imagePoints
+    
+    ifstream ifs(ofToDataPath(data_dir + "object-points.dat").c_str());
+    boost::archive::text_iarchive ia(ifs);
+    for (int i = 0; i < calibration_meshes_.size(); i++) {
+        ia >> *calibration_meshes_[i];
+    }
+    ifs.close();
+    
+    // load the calibration-advanced yml
+    
+    FileStorage fs(ofToDataPath(data_dir + "calibration-advanced.yml", true), FileStorage::READ);
+    
+    Mat cameraMatrix;
+    Size2i imageSize;
+    fs["cameraMatrix"] >> cameraMatrix;
+    fs["imageSize"][0] >> imageSize.width;
+    fs["imageSize"][1] >> imageSize.height;
+    fs["rotationVector"] >> rotation_vector_;
+    fs["translationVector"] >> translation_vector_;
+    
+    intrinsics_.setup(cameraMatrix, imageSize);
+    model_matrix_ = makeMatrix(rotation_vector_, translation_vector_);
+    
+    calibration_ready_ = true;
+}
+
+
+void testApp::resetCalibration() {
+    for (auto it = calibration_meshes_.begin(); it != calibration_meshes_.end(); it++) {
+        (*it)->reset();
+        calibration_ready_ = false;
+    }
+}
+
+
+//--------------------------------------------------------------------------------------------------
+#pragma mark - Render
 
 void testApp::render() {
     ofPushMatrix();
@@ -396,241 +621,6 @@ void testApp::render() {
 //	}
 	ofPopStyle();
     ofPopMatrix();
-}
-
-
-void testApp::saveCalibration() {
-	string dirName = "calibration-" + ofGetTimestampString() + "/";
-	ofDirectory dir(dirName);
-	dir.create();
-	
-	FileStorage fs(ofToDataPath(dirName + "calibration-advanced.yml"), FileStorage::WRITE);
-	
-	Mat cameraMatrix = intrinsics_.getCameraMatrix();
-	fs << "cameraMatrix" << cameraMatrix;
-	
-	double focalLength = intrinsics_.getFocalLength();
-	fs << "focalLength" << focalLength;
-	
-	Point2d fov = intrinsics_.getFov();
-	fs << "fov" << fov;
-	
-	Point2d principalPoint = intrinsics_.getPrincipalPoint();
-	fs << "principalPoint" << principalPoint;
-	
-	cv::Size imageSize = intrinsics_.getImageSize();
-	fs << "imageSize" << imageSize;
-	
-	fs << "translationVector" << translation_vector_;
-	fs << "rotationVector" << rotation_vector_;
-    
-	Mat rotationMatrix;
-	Rodrigues(rotation_vector_, rotationMatrix);
-	fs << "rotationMatrix" << rotationMatrix;
-	
-	double rotationAngleRadians = norm(rotation_vector_, NORM_L2);
-	double rotationAngleDegrees = ofRadToDeg(rotationAngleRadians);
-	Mat rotationAxis = rotation_vector_ / rotationAngleRadians;
-	fs << "rotationAngleRadians" << rotationAngleRadians;
-	fs << "rotationAngleDegrees" << rotationAngleDegrees;
-	fs << "rotationAxis" << rotationAxis;
-	
-	ofVec3f axis(rotationAxis.at<double>(0), rotationAxis.at<double>(1), rotationAxis.at<double>(2));
-	ofVec3f euler = ofQuaternion(rotationAngleDegrees, axis).getEuler();
-	Mat eulerMat = (Mat_<double>(3,1) << euler.x, euler.y, euler.z);
-	fs << "euler" << eulerMat;
-	
-//	ofFile basic("calibration-basic.txt", ofFile::WriteOnly);
-//	ofVec3f position( translation_vector_.at<double>(1), translation_vector_.at<double>(2));
-//	basic << "position (in world units):" << endl;
-//	basic << "\tx: " << ofToString(translation_vector_.at<double>(0), 2) << endl;
-//	basic << "\ty: " << ofToString(translation_vector_.at<double>(1), 2) << endl;
-//	basic << "\tz: " << ofToString(translation_vector_.at<double>(2), 2) << endl;
-//	basic << "axis-angle rotation (in degrees):" << endl;
-//	basic << "\taxis x: " << ofToString(axis.x, 2) << endl;
-//	basic << "\taxis y: " << ofToString(axis.y, 2) << endl;
-//	basic << "\taxis z: " << ofToString(axis.z, 2) << endl;
-//	basic << "\tangle: " << ofToString(rotationAngleDegrees, 2) << endl;
-//	basic << "euler rotation (in degrees):" << endl;
-//	basic << "\tx: " << ofToString(euler.x, 2) << endl;
-//	basic << "\ty: " << ofToString(euler.y, 2) << endl;
-//	basic << "\tz: " << ofToString(euler.z, 2) << endl;
-//	basic << "fov (in degrees):" << endl;
-//	basic << "\thorizontal: " << ofToString(fov.x, 2) << endl;
-//	basic << "\tvertical: " << ofToString(fov.y, 2) << endl;
-//	basic << "principal point (in screen units):" << endl;
-//	basic << "\tx: " << ofToString(principalPoint.x, 2) << endl;
-//	basic << "\ty: " << ofToString(principalPoint.y, 2) << endl;
-//	basic << "image size (in pixels):" << endl;
-//	basic << "\tx: " << ofToString(principalPoint.x, 2) << endl;
-//	basic << "\ty: " << ofToString(principalPoint.y, 2) << endl;
-	
-    ofstream ofs(ofToDataPath(dirName + "object-points.dat").c_str());
-    boost::archive::text_oarchive oa(ofs);
-    for (int i = 0; i < calibration_meshes_.size(); i++) {
-        oa << *calibration_meshes_[i];
-    }
-    ofs.close();
-}
-
-
-void testApp::loadCalibration() {
-    
-    // retrieve advanced calibration folder
-    
-    ofFileDialogResult result = ofSystemLoadDialog("Select a calibration folder", true, ofToDataPath("", true));
-    if (!result.bSuccess) return;
-    string data_dir = result.getPath() + "/";
-    
-    // load objectPoints and imagePoints
-
-    ifstream ifs(ofToDataPath(data_dir + "object-points.dat").c_str());
-    boost::archive::text_iarchive ia(ifs);
-    for (int i = 0; i < calibration_meshes_.size(); i++) {
-        ia >> *calibration_meshes_[i];
-    }
-    ifs.close();
-    
-    // load the calibration-advanced yml
-    
-    FileStorage fs(ofToDataPath(data_dir + "calibration-advanced.yml", true), FileStorage::READ);
-    
-    Mat cameraMatrix;
-    Size2i imageSize;
-    fs["cameraMatrix"] >> cameraMatrix;
-    fs["imageSize"][0] >> imageSize.width;
-    fs["imageSize"][1] >> imageSize.height;
-    fs["rotationVector"] >> rotation_vector_;
-    fs["translationVector"] >> translation_vector_;
-    
-    intrinsics_.setup(cameraMatrix, imageSize);
-    model_matrix_ = makeMatrix(rotation_vector_, translation_vector_);
-    
-    calibration_ready_ = true;
-}
-
-
-void testApp::resetCalibration() {
-    for (auto it = calibration_meshes_.begin(); it != calibration_meshes_.end(); it++) {
-        (*it)->reset();
-        calibration_ready_ = false;
-    }
-}
-
-
-void testApp::setupControlPanel() {
-	panel.setup("mapamokWWMMM", 10, 10, 300, 600);
-    //	panel.msg = "tab hides the panel, space toggles render/selection mode, 'f' toggles fullscreen.";
-	
-	panel.addPanel("Interaction");
-	panel.addToggle("setupMode", "setupMode", true);
-	panel.addSlider("scale", "scale", 1, .1, 3);
-	panel.addSlider("backgroundColor", "backgroundColor", 0, 255, true);
-    vector<string> boxNames;
-    boxNames.push_back("faces");
-    boxNames.push_back("fullWireframe");
-    boxNames.push_back("outlineWireframe");
-    boxNames.push_back("occludedWireframe");
-    panel.addMultiToggle("drawMode", "drawMode", 3, boxNames );
-    vector<string> shaderNames;
-    shaderNames.push_back("none");
-    shaderNames.push_back("lights");
-    shaderNames.push_back("shader");
-    panel.addMultiToggle("shading", "shading", 0, shaderNames );
-	panel.addToggle("loadCalibration", "loadCalibration", false);
-	panel.addToggle("saveCalibration", "saveCalibration", false);
-	panel.addToggle("resetCalibration", "resetCalibration", false);
-	
-	panel.addPanel("Highlight");
-	panel.addToggle("highlight", "highlight", false);
-	panel.addSlider("highlightPosition", "highlightPosition", 0, 0, 1);
-	panel.addSlider("highlightOffset", "highlightOffset", .1, 0, 1);
-	
-	panel.addPanel("Calibration");
-	panel.addSlider("aov", "aov", 80, 50, 100);
-	panel.addToggle("CV_CALIB_FIX_ASPECT_RATIO", "CV_CALIB_FIX_ASPECT_RATIO", true);
-	panel.addToggle("CV_CALIB_FIX_K1", "CV_CALIB_FIX_K1", true);
-	panel.addToggle("CV_CALIB_FIX_K2", "CV_CALIB_FIX_K2", true);
-	panel.addToggle("CV_CALIB_FIX_K3", "CV_CALIB_FIX_K3", true);
-	panel.addToggle("CV_CALIB_ZERO_TANGENT_DIST", "CV_CALIB_ZERO_TANGENT_DIST", true);
-	panel.addToggle("CV_CALIB_FIX_PRINCIPAL_POINT", "CV_CALIB_FIX_PRINCIPAL_POINT", false);
-	
-	panel.addPanel("Rendering");
-	panel.addSlider("lineWidth", "lineWidth", 2, 1, 8, true);
-	panel.addToggle("useSmoothing", "useSmoothing", false);
-	panel.addToggle("useFog", "useFog", false);
-	panel.addSlider("fogNear", "fogNear", 200, 0, 1000);
-	panel.addSlider("fogFar", "fogFar", 1850, 0, 2500);
-	panel.addSlider("screenPointSize", "screenPointSize", 2, 1, 16, true);
-	panel.addSlider("selectedPointSize", "selectedPointSize", 8, 1, 16, true);
-	panel.addSlider("selectionRadius", "selectionRadius", 12, 1, 32);
-	panel.addSlider("lightX", "lightX", 200, -1000, 1000);
-	panel.addSlider("lightY", "lightY", 400, -1000, 1000);
-	panel.addSlider("lightZ", "lightZ", 800, -1000, 1000);
-	panel.addToggle("randomLighting", "randomLighting", false);
-	
-	panel.addPanel("Internal");
-	panel.addToggle("validShader", "validShader", true);
-	panel.addToggle("selectionMode", "selectionMode", true);
-	panel.addToggle("hoverSelected", "hoverSelected", false);
-//	panel.addSlider("hoverChoice", "hoverChoice", 0, 0, object_points_.size(), true);
-//	panel.addToggle("selected", "selected", false);
-	panel.addToggle("dragging", "dragging", false);
-	panel.addToggle("arrowing", "arrowing", false);
-//	panel.addSlider("selectionChoice", "selectionChoice", 0, 0, object_points_.size(), true);
-	panel.addSlider("slowLerpRate", "slowLerpRate", .001, 0, .01);
-	panel.addSlider("fastLerpRate", "fastLerpRate", 1, 0, 1);
-}
-
-
-void testApp::updateRenderMode() {
-	// generate camera matrix given aov guess
-	float aov = getf("aov");
-	Size2i image_size(ofGetWidth(), ofGetHeight());
-	float f = image_size.width * ofDegToRad(aov); // i think this is wrong, but it's optimized out anyway
-	Point2f c = Point2f(image_size) * (1. / 2);
-	Mat1d camera_matrix = (Mat1d(3, 3) <<
-                           f, 0, c.x,
-                           0, f, c.y,
-                           0, 0, 1);
-    
-	// generate flags
-#define getFlag(flag) (panel.getValueB((#flag)) ? flag : 0)
-	int flags =
-    CV_CALIB_USE_INTRINSIC_GUESS |
-    getFlag(CV_CALIB_FIX_PRINCIPAL_POINT) |
-    getFlag(CV_CALIB_FIX_ASPECT_RATIO) |
-    getFlag(CV_CALIB_FIX_K1) |
-    getFlag(CV_CALIB_FIX_K2) |
-    getFlag(CV_CALIB_FIX_K3) |
-    getFlag(CV_CALIB_ZERO_TANGENT_DIST);
-	
-	vector<vector<Point3f> > reference_object_points(1);
-	vector<vector<Point2f> > reference_image_points(1);
-    for (int j = 0; j < calibration_meshes_.size(); j++) {
-        CalibrationMesh *m = calibration_meshes_[j];
-        int n = m->points.size();
-        for (int i = 0; i < n; i++) {
-            CalibrationPoint &p = m->points[i];
-            if (p.enabled) {
-                reference_object_points[0].push_back(toCv(p.object));
-                reference_image_points[0].push_back(toCv(p.image));
-            }
-        }
-    }
-	const static int min_points = 6;
-	if (reference_object_points[0].size() >= min_points) {
-        vector<Mat> rvecs, tvecs;
-        Mat distCoeffs;
-		calibrateCamera(reference_object_points, reference_image_points, image_size, camera_matrix, distCoeffs, rvecs, tvecs, flags);
-		rotation_vector_ = rvecs[0];
-		translation_vector_ = tvecs[0];
-		intrinsics_.setup(camera_matrix, image_size);
-		model_matrix_ = makeMatrix(rotation_vector_, translation_vector_);
-		calibration_ready_ = true;
-	} else {
-		calibration_ready_ = false;
-	}
 }
 
 
@@ -769,6 +759,29 @@ void testApp::drawRenderMode() {
             drawLabeledPoint(hovering_point_, calibration_meshes_[hovering_mesh_]->points[hovering_point_].image, magentaPrint);
         }
 	}
+}
+
+
+//--------------------------------------------------------------------------------------------------
+#pragma mark - Utils
+
+inline void testApp::setb(string name, bool value) {
+	panel.setValueB(name, value);
+}
+inline void testApp::seti(string name, int value) {
+	panel.setValueI(name, value);
+}
+inline void testApp::setf(string name, float value) {
+	panel.setValueF(name, value);
+}
+inline bool testApp::getb(string name) {
+	return panel.getValueB(name);
+}
+inline int testApp::geti(string name) {
+	return panel.getValueI(name);
+}
+inline float testApp::getf(string name) {
+	return panel.getValueF(name);
 }
 
 
