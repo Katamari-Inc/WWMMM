@@ -12,6 +12,7 @@ void testApp::setup() {
     ofSetDrawBitmapMode(OF_BITMAPMODE_MODEL_BILLBOARD);
     ofSetVerticalSync(true);
 //    ofSetFullscreen(true);
+	ofSetWindowTitle("mapamokWWMMM");
     ofSetEscapeQuitsApp(false);
     
     selected_mesh_ = -1;
@@ -36,14 +37,6 @@ void testApp::setup() {
 
 
 void testApp::update() {
-	ofSetWindowTitle("mapamok");
-	if (getb("randomLighting")) {
-		setf("lightX", ofSignedNoise(ofGetElapsedTimef(), 1, 1) * 1000);
-		setf("lightY", ofSignedNoise(1, ofGetElapsedTimef(), 1) * 1000);
-		setf("lightZ", ofSignedNoise(1, 1, ofGetElapsedTimef()) * 1000);
-	}
-//	light_.setPosition(getf("lightX"), getf("lightY"), getf("lightZ"));
-    
 	if (getb("selectionMode")) {
         camera_.enableMouseInput();
 	} else {
@@ -83,20 +76,6 @@ void testApp::draw() {
 		drawSelectionMode();
 	} else {
 		drawRenderMode();
-	}
-	if (!getb("validShader")) {
-		ofPushStyle();
-		ofSetColor(magentaPrint);
-		ofSetLineWidth(8);
-		ofLine(0, 0, ofGetWidth(), ofGetHeight());
-		ofLine(ofGetWidth(), 0, 0, ofGetHeight());
-		string message = "Shader failed to compile.";
-		ofVec2f center(ofGetWidth(), ofGetHeight());
-		center /= 2;
-		center.x -= message.size() * 8 / 2;
-		center.y -= 8;
-		drawHighlightString(message, center);
-		ofPopStyle();
 	}
 }
 
@@ -304,19 +283,19 @@ void testApp::setupControlPanel() {
     boxNames.push_back("outlineWireframe");
     boxNames.push_back("occludedWireframe");
     panel.addMultiToggle("drawMode", "drawMode", 3, boxNames );
-    vector<string> shaderNames;
-    shaderNames.push_back("none");
-    shaderNames.push_back("lights");
-    shaderNames.push_back("shader");
-    panel.addMultiToggle("shading", "shading", 0, shaderNames );
+//    vector<string> shaderNames;
+//    shaderNames.push_back("none");
+//    shaderNames.push_back("lights");
+//    shaderNames.push_back("shader");
+//    panel.addMultiToggle("shading", "shading", 0, shaderNames );
 	panel.addToggle("loadCalibration", "loadCalibration", false);
 	panel.addToggle("saveCalibration", "saveCalibration", false);
 	panel.addToggle("resetCalibration", "resetCalibration", false);
 	
-	panel.addPanel("Highlight");
-	panel.addToggle("highlight", "highlight", false);
-	panel.addSlider("highlightPosition", "highlightPosition", 0, 0, 1);
-	panel.addSlider("highlightOffset", "highlightOffset", .1, 0, 1);
+//	panel.addPanel("Highlight");
+//	panel.addToggle("highlight", "highlight", false);
+//	panel.addSlider("highlightPosition", "highlightPosition", 0, 0, 1);
+//	panel.addSlider("highlightOffset", "highlightOffset", .1, 0, 1);
 	
 	panel.addPanel("Calibration");
 	panel.addSlider("aov", "aov", 80, 50, 100);
@@ -329,27 +308,27 @@ void testApp::setupControlPanel() {
 	
 	panel.addPanel("Rendering");
 	panel.addSlider("lineWidth", "lineWidth", 2, 1, 8, true);
-	panel.addToggle("useSmoothing", "useSmoothing", false);
-	panel.addToggle("useFog", "useFog", false);
-	panel.addSlider("fogNear", "fogNear", 200, 0, 1000);
-	panel.addSlider("fogFar", "fogFar", 1850, 0, 2500);
+//	panel.addToggle("useSmoothing", "useSmoothing", false);
+//	panel.addToggle("useFog", "useFog", false);
+//	panel.addSlider("fogNear", "fogNear", 200, 0, 1000);
+//	panel.addSlider("fogFar", "fogFar", 1850, 0, 2500);
 	panel.addSlider("screenPointSize", "screenPointSize", 2, 1, 16, true);
 	panel.addSlider("selectedPointSize", "selectedPointSize", 8, 1, 16, true);
 	panel.addSlider("selectionRadius", "selectionRadius", 12, 1, 32);
-	panel.addSlider("lightX", "lightX", 200, -1000, 1000);
-	panel.addSlider("lightY", "lightY", 400, -1000, 1000);
-	panel.addSlider("lightZ", "lightZ", 800, -1000, 1000);
-	panel.addToggle("randomLighting", "randomLighting", false);
+//	panel.addSlider("lightX", "lightX", 200, -1000, 1000);
+//	panel.addSlider("lightY", "lightY", 400, -1000, 1000);
+//	panel.addSlider("lightZ", "lightZ", 800, -1000, 1000);
+//	panel.addToggle("randomLighting", "randomLighting", false);
 	
 	panel.addPanel("Internal");
-	panel.addToggle("validShader", "validShader", true);
+//	panel.addToggle("validShader", "validShader", true);
 	panel.addToggle("selectionMode", "selectionMode", true);
-	panel.addToggle("hoverSelected", "hoverSelected", false);
-    //	panel.addSlider("hoverChoice", "hoverChoice", 0, 0, object_points_.size(), true);
-    //	panel.addToggle("selected", "selected", false);
+//	panel.addToggle("hoverSelected", "hoverSelected", false);
+//	panel.addSlider("hoverChoice", "hoverChoice", 0, 0, object_points_.size(), true);
+//	panel.addToggle("selected", "selected", false);
 	panel.addToggle("dragging", "dragging", false);
 	panel.addToggle("arrowing", "arrowing", false);
-    //	panel.addSlider("selectionChoice", "selectionChoice", 0, 0, object_points_.size(), true);
+//	panel.addSlider("selectionChoice", "selectionChoice", 0, 0, object_points_.size(), true);
 	panel.addSlider("slowLerpRate", "slowLerpRate", .001, 0, .01);
 	panel.addSlider("fastLerpRate", "fastLerpRate", 1, 0, 1);
 }
@@ -533,74 +512,28 @@ void testApp::resetCalibration() {
 
 void testApp::render() {
     ofPushMatrix();
-    
     ofDrawAxis(10);
     
 	ofPushStyle();
 	ofSetLineWidth(geti("lineWidth"));
-	if (getb("useSmoothing")) {
-		ofEnableSmoothing();
-	} else {
-		ofDisableSmoothing();
-	}
-	int shading = geti("shading");
-//	bool useLights = shading == 1;
-//	bool useShader = shading == 2;
-//	if (useLights) {
-//		light_.enable();
-//		ofEnableLighting();
-//		glShadeModel(GL_SMOOTH);
-//		glEnable(GL_NORMALIZE);
-//	}
-	
-//	if (getb("highlight")) {
-//		object_mesh_.clearColors();
-//		int n = object_mesh_.getNumVertices();
-//		float highlightPosition = getf("highlightPosition");
-//		float highlightOffset = getf("highlightOffset");
-//		for (int i = 0; i < n; i++) {
-//			int lower = ofMap(highlightPosition - highlightOffset, 0, 1, 0, n);
-//			int upper = ofMap(highlightPosition + highlightOffset, 0, 1, 0, n);
-//			ofColor cur = (lower < i && i < upper) ? ofColor::white : ofColor::black;
-//			object_mesh_.addColor(cur);
-//		}
-//	}
-	
+    ofEnableSmoothing();
 	ofSetColor(255);
 	glPushAttrib(GL_ALL_ATTRIB_BITS);
 	glEnable(GL_DEPTH_TEST);
-//	if (useShader) {
-//		ofFile fragFile("shader.frag"), vertFile("shader.vert");
-//		Poco::Timestamp fragTimestamp = fragFile.getPocoFile().getLastModified();
-//		Poco::Timestamp vertTimestamp = vertFile.getPocoFile().getLastModified();
-//		if (fragTimestamp != lastFragTimestamp || vertTimestamp != lastVertTimestamp) {
-//			bool validShader = shader.load("shader");
-//			setb("validShader", validShader);
-//		}
-//		lastFragTimestamp = fragTimestamp;
-//		lastVertTimestamp = vertTimestamp;
-//		
-//		shader.begin();
-//		shader.setUniform1f("elapsedTime", ofGetElapsedTimef());
-//		shader.end();
-//	}
+
 	ofColor transparentBlack(0, 0, 0, 0);
 	switch(geti("drawMode")) {
 		case 0: // faces
-//			if (useShader) shader.begin();
 			glEnable(GL_CULL_FACE);
 			glCullFace(GL_BACK);
             for (int i = 0; i < calibration_meshes_.size(); i++) {
                 calibration_meshes_[i]->draw();
             }
-//			if (useShader) shader.end();
 			break;
 		case 1: // fullWireframe
-//			if (useShader) shader.begin();
             for (int i = 0; i < calibration_meshes_.size(); i++) {
                 calibration_meshes_[i]->object_mesh.drawFaces();
             }
-//			if (useShader) shader.end();
 			break;
 		case 2: // outlineWireframe
             for (int i = 0; i < calibration_meshes_.size(); i++) {
@@ -615,11 +548,10 @@ void testApp::render() {
             }
 			break;
 	}
+
 	glPopAttrib();
-//	if (useLights) {
-//		ofDisableLighting();
-//	}
 	ofPopStyle();
+
     ofPopMatrix();
 }
 

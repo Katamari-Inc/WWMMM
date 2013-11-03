@@ -15,20 +15,6 @@
 
 class testApp : public ofBaseApp {
 public:
-	void setb(string name, bool value);
-	void seti(string name, int value);
-	void setf(string name, float value);
-	bool getb(string name);
-	int geti(string name);
-	float getf(string name);
-    
-    inline CalibrationMesh *selectedMesh() {
-        return calibration_meshes_[selected_mesh_];
-    }
-    inline CalibrationPoint &selectedPoint() {
-        return calibration_meshes_[selected_mesh_]->points[selected_point_];
-    }
-	
 	void setup();
 	void update();
 	void draw();
@@ -38,16 +24,29 @@ public:
 	void mousePressed(int x, int y, int button);
 	void mouseReleased(int x, int y, int button);
 	
-	void setupControlPanel();
 	void setupMesh();
-	void drawLabeledPoint(int label, ofVec2f position, ofColor color, ofColor bg = ofColor::black, ofColor fg = ofColor::white);
+	void setupControlPanel();
+
 	void calibrateWithReferencePoints();
+	void saveCalibration();
+    void loadCalibration();
+    void resetCalibration();
+    
+	void render();
+	void drawLabeledPoint(int label, ofVec2f position, ofColor color, ofColor bg = ofColor::black, ofColor fg = ofColor::white);
 	void drawSelectionMode();
 	void drawRenderMode();
-	void render();
-    void loadCalibration();
-	void saveCalibration();
-    void resetCalibration();
+
+	void setb(string name, bool value);
+	void seti(string name, int value);
+	void setf(string name, float value);
+	bool getb(string name);
+	int geti(string name);
+	float getf(string name);
+
+    inline CalibrationMesh *selectedMesh() { return calibration_meshes_[selected_mesh_]; }
+    inline CalibrationPoint &selectedPoint() { return calibration_meshes_[selected_mesh_]->points[selected_point_]; }
+
     float getClosestPointOnMeshes(float x, float y, int &mesh_index, int &point_index);
 	float getClosestImagePoint(float x, float y, int &mesh_index, int &point_index);
     
@@ -73,9 +72,6 @@ public:
 	ofxCv::Intrinsics intrinsics_;
 	bool calibration_ready_;
 	
-    //	Poco::Timestamp lastFragTimestamp, lastVertTimestamp;
-    //	ofShader shader;
-    
     MotorManager motor_manager_;
     
     ofxOscReceiver osc_receiver_;
