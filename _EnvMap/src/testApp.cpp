@@ -25,6 +25,8 @@ void testApp::update() {
 
 //--------------------------------------------------------------
 void testApp::draw() {
+    ofBackground(64);
+    
     camera_.begin(); {
         glDepthMask(GL_FALSE); {
             ofSetColor(255);
