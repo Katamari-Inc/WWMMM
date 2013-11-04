@@ -9,6 +9,7 @@ float CalibrationMesh::white = 0.0f;
 float CalibrationMesh::visibility = 1.0f;
 
 ofxEasingLinear linear_easing_;
+ofxEasingCubic cubic_easing_;
 
 
 #pragma mark oF Event Handlers
@@ -39,6 +40,8 @@ void testApp::setup() {
     motor_manager_.setup(port);
     needs_update_motor_ = false;
     
+    world_state_ = "TITLE";
+    
     osc_receiver_.setup(8001);
 }
 
@@ -50,6 +53,9 @@ void testApp::update() {
 		calibrateWithReferencePoints();
 		camera_.disableMouseInput();
 	}
+    
+    
+    // process OSC messages
     
     ofxOscMessage message;
     while (osc_receiver_.getNextMessage(&message)) {
@@ -71,30 +77,31 @@ void testApp::update() {
             stage0_.setOrientation(q);
             needs_update_motor_ = true;
         } else if (address == "/world/state") {
-            cout << "World state: " << message.getArgAsString(0) << endl;
+            world_state_ = message.getArgAsString(0);
+            ofLog(OF_LOG_NOTICE, "World state: %s", world_state_.c_str());
+            if (world_state_ == "TITLE") {
+                resetToTitle();
+            } else if (world_state_ == "OPENING") {
+                startIntro();
+            }
         }
     }
     
-    ofQuaternion q;
-    q.slerp(getf("rotationEasing"), stage_.getOrientationQuat(), stage0_.getOrientationQuat());
-    stage_.setOrientation(q);
-    root_.setPosition(root0_.getPosition().interpolate(root_.getPosition(), 1 - getf("elevationEasing")));
-    needs_update_motor_ = true;
     
-    if (!getb("selectionMode")) {
-        stage_.setPosition(0, 0, 0);
-        if (!getb("setupMode")) {
-            ofVec3f p = ball_.pre_jump_pos_;
-            p.y = ofClamp(p.y, 40, 90) - 90;
-            p = p * stage_.getLocalTransformMatrix();
-            stage_.setPosition(0, -p.y, 0);
-        }
-        motor_manager_.setTransformMatrix(stage_.getGlobalTransformMatrix());
-        needs_update_motor_ = false;
+    // update tweens
+    
+    if (stage_level_tween_.isRunning()) {
+        float t = stage_level_tween_.update();
+        root0_.setPosition(0, t * 500, 0);
+        root_.setPosition(0, t * 500, 0);
+        needs_update_motor_ = true;
     }
-    
-    motor_manager_.update();
-
+    if (stage_tilt_tween_.isRunning()) {
+        float t = stage_tilt_tween_.update();
+        stage0_.setOrientation(ofVec3f(t * 20, 0, 0));
+        stage_.setOrientation(ofVec3f(t * 20, 0, 0));
+        needs_update_motor_ = true;
+    }
     if (white_tween_.isRunning()) {
         CalibrationMesh::white = white_tween_.update();
         setf("white", CalibrationMesh::white);
@@ -103,6 +110,30 @@ void testApp::update() {
         CalibrationMesh::visibility = visibility_tween_.update();
         setf("visibility", CalibrationMesh::visibility);
     }
+
+    
+    // easing
+    
+    ofQuaternion q;
+    q.slerp(getf("rotationEasing"), stage_.getOrientationQuat(), stage0_.getOrientationQuat());
+    stage_.setOrientation(q);
+    root_.setPosition(root0_.getPosition().interpolate(root_.getPosition(), 1 - getf("elevationEasing")));
+    
+    
+    // update motor
+    
+    if (needs_update_motor_) {
+        stage0_.setPosition(0, 0, 0);
+        if (world_state_ == "GAME") {
+            ofVec3f p = ball_.pre_jump_pos_;
+            p.y = ofClamp(p.y, 40, 90) - 40;
+            p = p * stage0_.getLocalTransformMatrix();
+            stage0_.setPosition(0, -p.y, 0);
+        }
+        motor_manager_.setTransformMatrix(stage0_.getGlobalTransformMatrix());
+        needs_update_motor_ = false;
+    }
+    motor_manager_.update();
 }
 
 
@@ -172,18 +203,22 @@ void testApp::keyPressed(int key) {
                 needs_update_motor_ = true;
                 break;
             case 'n':
+            case 'l':
                 stage0_.roll(-speed);
                 needs_update_motor_ = true;
                 break;
             case 'h':
+            case 'j':
                 stage0_.roll(speed);
                 needs_update_motor_ = true;
                 break;
             case 'c':
+            case 'i':
                 stage0_.pitch(-speed);
                 needs_update_motor_ = true;
                 break;
             case 't':
+            case 'k':
                 stage0_.pitch(speed);
                 needs_update_motor_ = true;
                 break;
@@ -244,10 +279,7 @@ void testApp::keyPressed(int key) {
             needs_update_motor_ = true;
             break;
         case 'a':
-            motor_manager_.reset();
-            stage0_.resetTransform();
-            root0_.resetTransform();
-            needs_update_motor_ = true;
+            resetToTitle();
             break;
         
         case '5':
@@ -260,9 +292,11 @@ void testApp::keyPressed(int key) {
             needs_update_motor_ = true;
             break;
             
-        case 'k':
-            white_tween_.setParameters(linear_easing_, ofxTween::easeInOut, 1, 0, 3000, 0);
-            visibility_tween_.setParameters(linear_easing_, ofxTween::easeInOut, 0, 1, 3000, 3000);
+        case 'm':
+            startIntro();
+            break;
+        case 'v':
+            resetToTitle();
             break;
     }
 }
@@ -776,6 +810,29 @@ void testApp::drawRenderMode() {
             drawLabeledPoint(hovering_point_, calibration_meshes_[hovering_mesh_]->points[hovering_point_].image, magentaPrint);
         }
 	}
+}
+
+
+//--------------------------------------------------------------------------------------------------
+#pragma mark - Scene control
+
+void testApp::startIntro() {
+    white_tween_.setParameters(linear_easing_, ofxTween::easeInOut, 1, 0, 3000, 0);
+    stage_level_tween_.setParameters(cubic_easing_, ofxTween::easeInOut, 0, 1, 10000, 0);
+    stage_tilt_tween_.setParameters(cubic_easing_, ofxTween::easeInOut, 0, 1, 10000, 3000);
+    visibility_tween_.setParameters(linear_easing_, ofxTween::easeInOut, 0, 1, 5000, 10000);
+//    stage_tilt_tween_.setParameters(cubic_easing_, ofxTween::easeInOut, 1, 0, 17000, 3000);
+}
+
+
+void testApp::resetToTitle() {
+    white_tween_.setParameters(linear_easing_, ofxTween::easeInOut, 0, 1, 3000, 0);
+    visibility_tween_.setParameters(linear_easing_, ofxTween::easeInOut, 1, 1, 0, 3000);
+
+    motor_manager_.reset();
+    stage0_.resetTransform();
+    root0_.resetTransform();
+    needs_update_motor_ = true;
 }
 
 

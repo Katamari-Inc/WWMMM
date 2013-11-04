@@ -33,6 +33,9 @@ public:
     void loadCalibration();
     void resetCalibration();
     
+    void startIntro();
+    void resetToTitle();
+    
 	void render();
 	void drawLabeledPoint(int label, ofVec2f position, ofColor color, ofColor bg = ofColor::black, ofColor fg = ofColor::white);
 	void drawSelectionMode();
@@ -71,6 +74,8 @@ public:
 
     ofxTween white_tween_;
     ofxTween visibility_tween_;
+    ofxTween stage_level_tween_;
+    ofxTween stage_tilt_tween_;
     
     int selected_mesh_;
     int selected_point_;
@@ -85,6 +90,8 @@ public:
 	
     MotorManager motor_manager_;
     bool needs_update_motor_;
+    
+    string world_state_;
     
     ofxOscReceiver osc_receiver_;
 };
