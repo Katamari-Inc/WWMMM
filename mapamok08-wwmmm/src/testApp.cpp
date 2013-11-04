@@ -71,18 +71,24 @@ void testApp::update() {
         } else if (address == "/ball/jumping") {
             ball_.jumping_ = message.getArgAsInt32(0);
         } else if (address == "/world/orientation") {
-            ofQuaternion q;
-            q.set(message.getArgAsFloat(0), message.getArgAsFloat(1), message.getArgAsFloat(2), message.getArgAsFloat(3));
-            q.slerp(getf("rotationAmount"), ofQuaternion(), q);
-            stage0_.setOrientation(q);
-            needs_update_motor_ = true;
+            if (world_state_ == "GAME") {
+                ofQuaternion q;
+                q.set(message.getArgAsFloat(0), message.getArgAsFloat(1), message.getArgAsFloat(2), message.getArgAsFloat(3));
+                q.slerp(getf("rotationAmount"), ofQuaternion(), q);
+                stage0_.setOrientation(q);
+                needs_update_motor_ = true;
+            }
         } else if (address == "/world/state") {
             world_state_ = message.getArgAsString(0);
-            ofLog(OF_LOG_NOTICE, "World state: %s", world_state_.c_str());
+            ofLog(OF_LOG_VERBOSE, "World state: %s", world_state_.c_str());
             if (world_state_ == "TITLE") {
                 resetToTitle();
             } else if (world_state_ == "OPENING") {
                 startIntro();
+            } else if (world_state_ == "FALLING" || world_state_ == "FLY_AWAY") {
+                stage0_.resetTransform();
+                stage_.resetTransform();
+                needs_update_motor_ = true;
             }
         }
     }
@@ -372,7 +378,7 @@ void testApp::setupMesh() {
     stage0_.setParent(root0_);
     
     white_tween_.setParameters(linear_easing_, ofxTween::easeOut, 1, 1, 0, 0);
-    white_tween_.setParameters(linear_easing_, ofxTween::easeOut, 0, 0, 0, 0);
+    visibility_tween_.setParameters(linear_easing_, ofxTween::easeOut, 0, 0, 0, 0);
 }
 
 
@@ -817,11 +823,10 @@ void testApp::drawRenderMode() {
 #pragma mark - Scene control
 
 void testApp::startIntro() {
-    white_tween_.setParameters(linear_easing_, ofxTween::easeInOut, 1, 0, 3000, 0);
+    white_tween_.setParameters(linear_easing_, ofxTween::easeInOut, 1, 0, 3000, 2000);
     stage_level_tween_.setParameters(cubic_easing_, ofxTween::easeInOut, 0, 1, 10000, 0);
     stage_tilt_tween_.setParameters(cubic_easing_, ofxTween::easeInOut, 0, 1, 10000, 3000);
     visibility_tween_.setParameters(linear_easing_, ofxTween::easeInOut, 0, 1, 5000, 10000);
-//    stage_tilt_tween_.setParameters(cubic_easing_, ofxTween::easeInOut, 1, 0, 17000, 3000);
 }
 
 
