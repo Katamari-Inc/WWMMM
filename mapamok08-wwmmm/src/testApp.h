@@ -6,6 +6,7 @@
 #include "ofxProCamToolkit.h"
 #include "ofxAutoControlPanel.h"
 #include "ofxOsc.h"
+#include "ofxTween.h"
 #include "LineArt.h"
 #include "pystring.h"
 #include "MotorManager.h"
@@ -67,6 +68,9 @@ public:
     
     ofQuaternion target_orientation_;
     ofQuaternion current_orientation_;
+
+    ofxTween white_tween_;
+    ofxTween visibility_tween_;
     
     int selected_mesh_;
     int selected_point_;

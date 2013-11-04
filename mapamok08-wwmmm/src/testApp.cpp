@@ -8,6 +8,8 @@ using namespace cv;
 float CalibrationMesh::white = 0.0f;
 float CalibrationMesh::visibility = 1.0f;
 
+ofxEasingLinear linear_easing_;
+
 
 #pragma mark oF Event Handlers
 
@@ -92,6 +94,15 @@ void testApp::update() {
     }
     
     motor_manager_.update();
+
+    if (white_tween_.isRunning()) {
+        CalibrationMesh::white = white_tween_.update();
+        setf("white", CalibrationMesh::white);
+    }
+    if (visibility_tween_.isRunning()) {
+        CalibrationMesh::visibility = visibility_tween_.update();
+        setf("visibility", CalibrationMesh::visibility);
+    }
 }
 
 
@@ -248,6 +259,11 @@ void testApp::keyPressed(int key) {
             root0_.setPosition(0, (key - '5' + 1) * 100, 0);
             needs_update_motor_ = true;
             break;
+            
+        case 'k':
+            white_tween_.setParameters(linear_easing_, ofxTween::easeInOut, 1, 0, 3000, 0);
+            visibility_tween_.setParameters(linear_easing_, ofxTween::easeInOut, 0, 1, 3000, 3000);
+            break;
     }
 }
 
@@ -302,11 +318,9 @@ void testApp::setupMesh() {
                 mesh->loadShader("shaders/ocean");
                 break;
             case 1:
-//                mesh->color.set(64, 148, 65);
                 mesh->loadShader("shaders/bridge");
                 break;
             case 2:
-//                mesh->color.set(219, 79, 79);
                 mesh->loadShader("shaders/elevator");
                 break;
             case 3:
@@ -320,10 +334,11 @@ void testApp::setupMesh() {
     ball_.setParent(stage_);
     goal_.setup();
     goal_.setParent(stage_);
-    
     stage_.setParent(root_);
-    
     stage0_.setParent(root0_);
+    
+    white_tween_.setParameters(linear_easing_, ofxTween::easeOut, 1, 1, 0, 0);
+    white_tween_.setParameters(linear_easing_, ofxTween::easeOut, 0, 0, 0, 0);
 }
 
 
