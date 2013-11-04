@@ -1,14 +1,11 @@
+uniform mat4 cameraMatrix;
+
 varying vec3 r;
-varying vec3 position;
-varying vec3 normal;
 
 void main(void) {
-  vec4 p = gl_ModelViewMatrix * gl_Vertex;
-  // position = p.xyz;
-  vec3 v = p.xyz / p.w;
-  vec3 n = normalize(gl_NormalMatrix * gl_Normal);
-  r = (gl_ModelViewMatrixInverse * vec4(reflect(p.xyz, normalize(n)), 0.0)).xyz;
-  // r = reflect(p.xyz, normalize(n));
-  // normal = n;
+  vec4 p = gl_ModelViewMatrix * gl_Vertex;  // 頂点位置
+  vec3 v = p.xyz / p.w;                     // 視線ベクトル
+  vec3 n = normalize(gl_NormalMatrix * gl_Normal);     // 法線ベクトル
+  r = vec3(cameraMatrix * vec4(reflect(v, n), 0));
   gl_Position = ftransform();
 }
