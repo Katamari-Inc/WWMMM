@@ -85,11 +85,23 @@ public:
         loader_.loadModel("goal.obj");
         goal_ = loader_.getMesh(0);
         setPosition(28.2, 51.607, 187.8);
+        reloadShader();
+    }
+    
+    void reloadShader() {
+        shader_.unload();
+        shader_.load("shaders/goal");
     }
     
     void customDraw() {
         ofRotateY(-ofGetElapsedTimef() * 30);
         ofPushStyle();
+        shader_.begin();
+        shader_.begin();
+        ofMatrix4x4 m;
+        shader_.setUniformMatrix4f("modelMatrix", m);
+        shader_.setUniform1f("white", CalibrationMesh::white);
+        shader_.setUniform1f("visibility", CalibrationMesh::visibility);
         glDepthMask(GL_FALSE);
         ofSetColor(255);
         goal_.drawFaces();
@@ -97,9 +109,11 @@ public:
         ofSetColor(0, 188, 235, 64);
         ofSetLineWidth(1);
         goal_.drawWireframe();
+        shader_.end();
         ofPopStyle();
     }
     
     ofxAssimpModelLoader loader_;
     ofMesh goal_;
+    ofShader shader_;
 };

@@ -5,7 +5,7 @@ using namespace ofxCv;
 using namespace cv;
 
 
-float CalibrationMesh::white = 1.0f;
+float CalibrationMesh::white = 0.0f;
 float CalibrationMesh::visibility = 1.0f;
 
 
@@ -103,6 +103,7 @@ void testApp::draw() {
         for (; it != calibration_meshes_.end(); it++) {
             (*it)->reloadShader();
         }
+        goal_.reloadShader();
         setb("reloadShader", false);
     }
     if (getb("loadCalibration")) {
