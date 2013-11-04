@@ -15,19 +15,27 @@ public:
         ofPoint sceneMin = loader_.getSceneMin();
         float size = MAX(sceneMax.x - sceneMin.x, MAX(sceneMax.y - sceneMin.y, sceneMax.z - sceneMin.z));
         setScale(5.4 * 2 * 0.3 / size);
-        ball_ = loader_.getMesh(0);
+        ball_ = loader_.getMesh(1);
+        core_ = loader_.getMesh(0);
     }
     
     void customDraw() {
         ofPushStyle();
-        ofSetLineWidth(1);
-        ofSetColor(255, 0, 0, 128);
+        glDepthMask(GL_FALSE);
+        ofSetLineWidth(5);
+        ofSetColor(39, 185, 246);
         ball_.drawWireframe();
+        glDepthMask(GL_TRUE);
+        ofSetColor(0, 255, 255);
+        core_.drawFaces();
+        ofSetColor(230);
+        ball_.drawFaces();
         ofPopStyle();
     }
 
     ofxAssimpModelLoader loader_;
     ofMesh ball_;
+    ofMesh core_;
 };
 
 

@@ -49,6 +49,9 @@ void testApp::setup() {
     
     receiver_.setup(8001);
     
+    camera_.setNearClip(1);
+    camera_.move_speed *= 0.2;
+    
     panel_.setup();
     panel_.add(rotation_.setup("Rotation", 0.2f, 0.0f, 1.0f));
 }
