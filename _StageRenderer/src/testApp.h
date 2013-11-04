@@ -57,9 +57,6 @@ public:
     ofImage floors_texture_;
     ofImage ocean_texture_;
     ofMatrix4x4 stage_transform_matrix_;
-    
-//    ofIcoSpherePrimitive ball_;
-//    ofxAssimpModelLoader ball_;
     Ball ball_;
     
     ofxOscReceiver receiver_;

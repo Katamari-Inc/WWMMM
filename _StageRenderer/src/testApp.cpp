@@ -49,8 +49,8 @@ void testApp::setup() {
     
     receiver_.setup(8001);
     
-    panel_.setup("Hoge");
-    panel_.add(rotation_.setup("Rotation", 1.0f, 0.0f, 1.0f));
+    panel_.setup();
+    panel_.add(rotation_.setup("Rotation", 0.2f, 0.0f, 1.0f));
 }
 
 //--------------------------------------------------------------
@@ -64,7 +64,7 @@ void testApp::update() {
         if (address == "/ball/position") {
             ball_.setPosition(message.getArgAsFloat(0) * .3, message.getArgAsFloat(1) * .3, message.getArgAsFloat(2) * .3);
         } else if (address == "/ball/orientation") {
-//            ball_.setOrientation(ofQuaternion(message.getArgAsFloat(0), message.getArgAsFloat(1), message.getArgAsFloat(2), message.getArgAsFloat(3)));
+            ball_.setOrientation(ofQuaternion(message.getArgAsFloat(0), message.getArgAsFloat(1), message.getArgAsFloat(2), message.getArgAsFloat(3)));
         } else if (address == "/world/orientation") {
             ofQuaternion q(message.getArgAsFloat(0), message.getArgAsFloat(1), message.getArgAsFloat(2), message.getArgAsFloat(3));
             q.slerp(rotation_, ofQuaternion(), q);
