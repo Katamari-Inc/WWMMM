@@ -299,6 +299,8 @@ void testApp::setupMesh() {
     
     ball_.setup();
     ball_.setParent(stage_);
+    goal_.setup();
+    goal_.setParent(stage_);
     
     stage_.setParent(root_);
     
@@ -314,9 +316,9 @@ void testApp::setupControlPanel() {
 	panel.addToggle("setupMode", "setupMode", true);
 	panel.addSlider("scale", "scale", 1, .1, 3);
 	panel.addSlider("backgroundColor", "backgroundColor", 0, 0, 255, true);
-    panel.addSlider("rotationAmount", "rotationAmount", 0.2, 0, 1);
-    panel.addSlider("rotationEasing", "rotationEasing", 0.1, 0, 1);
-    panel.addSlider("elevationEasing", "elevationEasing", 0.1, 0, 1);
+    panel.addSlider("rotationAmount", "rotationAmount", 0.3, 0, 1);
+    panel.addSlider("rotationEasing", "rotationEasing", 0.05, 0, 0.3);
+    panel.addSlider("elevationEasing", "elevationEasing", 0.05, 0, 0.3);
     vector<string> boxNames;
     boxNames.push_back("faces");
     boxNames.push_back("fullWireframe");
@@ -570,6 +572,7 @@ void testApp::render() {
                 calibration_meshes_[i]->draw();
             }
             ball_.draw();
+            goal_.draw();
 			break;
 		case 1: // fullWireframe
             for (int i = 0; i < calibration_meshes_.size(); i++) {
@@ -588,6 +591,7 @@ void testApp::render() {
                 calibration_meshes_[i]->restoreTransformGL();
             }
             ball_.draw();
+//            goal_.draw();
 			break;
 	}
 

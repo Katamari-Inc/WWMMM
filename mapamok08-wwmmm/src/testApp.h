@@ -61,6 +61,7 @@ public:
     ofImage floor_texture_;
     ofImage ocean_texture_;
     Ball ball_;
+    Goal goal_;
     ofNode root0_;
     ofNode root_;
     
