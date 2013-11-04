@@ -16,7 +16,7 @@ _ からはじまるやつはちょっとしたテスト。
 - _SyncedStage: OSC で quaternion うけとって回転させるテスト。
 - _MovingProjection: mapamok でモーターと連動して動くオブジェクトにプロジェクションしてみるテスト。オブジェクトの回転は OSC でうけとれる。
 - _SendOrientation: _MovingProjection にダミーの回転データをおくりつけてみるテスト。
-_ _StageRenderer: ステージを oF でちゃんとレンダリングするテスト。
-_ _ConstancAcc: L6470 の動作シミュレーションてすと。等加速度運動。 
+- _StageRenderer: ステージを oF でちゃんとレンダリングするテスト。
+- _ConstancAcc: L6470 の動作シミュレーションてすと。等加速度運動。 
 
 [メイキングブログはこつら。](http://mowwmmm.tumblr.com/)
