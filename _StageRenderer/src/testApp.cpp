@@ -18,6 +18,16 @@ void testApp::setup() {
     floors_texture_.loadImage("http-aid-dcc.png");
     ocean_texture_.loadImage("ocean.png");
     
+//    goal_.setScaleNomalization(false);
+//    goal_.loadModel("goal.dae");
+//    cout << goal_.getNumMeshes() << endl;
+//    cout << goal_.getSceneMin() << endl;
+//    cout << goal_.getSceneMax() << endl;
+//    cout << goal_.getModelMatrix() << endl;
+//    cout << goal_.getMeshHelper(0).matrix << endl;
+//    goal_mesh_ = goal_.getMeshHelper(0);
+    
+    
 //    ball_.setRadius(2);
 //    ball_.setResolution(0);
 //    ball_.setPosition(0, 0, 0);
@@ -46,6 +56,7 @@ void testApp::setup() {
 //    cout << ball_.getModelMatrix() << endl;
     
     ball_.setup();
+    goal_.setup();
     
     receiver_.setup(8001);
     
@@ -78,7 +89,7 @@ void testApp::update() {
 
 //--------------------------------------------------------------
 void testApp::draw() {
-    ofBackground(128);
+    ofBackground(64);
     
     ofVec3f p = ball_.getPosition() * stage_transform_matrix_;
 
@@ -122,6 +133,8 @@ void testApp::draw() {
     ball_.draw();
     ofPopMatrix();
     ofPopStyle();
+
+    goal_.draw();
     
     ofPopMatrix();
     

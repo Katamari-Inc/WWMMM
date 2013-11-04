@@ -39,6 +39,33 @@ public:
 };
 
 
+class Goal : public ofNode {
+public:
+    void setup() {
+        loader_.setScaleNomalization(false);
+        loader_.loadModel("goal.obj");
+        goal_ = loader_.getMesh(0);
+        setPosition(25.2, 61.607, 187.8);
+    }
+    
+    void customDraw() {
+        ofRotateY(-ofGetElapsedTimef() * 30);
+        ofPushStyle();
+        glDepthMask(GL_FALSE);
+        ofSetColor(255);
+        goal_.drawFaces();
+        glDepthMask(GL_TRUE);
+        ofSetColor(0, 188, 235, 64);
+        ofSetLineWidth(1);
+        goal_.drawWireframe();
+        ofPopStyle();
+    }
+    
+    ofxAssimpModelLoader loader_;
+    ofMesh goal_;
+};
+
+
 class testApp : public ofBaseApp {
     
 public:
@@ -66,6 +93,7 @@ public:
     ofImage ocean_texture_;
     ofMatrix4x4 stage_transform_matrix_;
     Ball ball_;
+    Goal goal_;
     
     ofxOscReceiver receiver_;
     
