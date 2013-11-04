@@ -5,6 +5,10 @@ using namespace ofxCv;
 using namespace cv;
 
 
+float CalibrationMesh::white = 1.0f;
+float CalibrationMesh::visibility = 1.0f;
+
+
 #pragma mark oF Event Handlers
 
 void testApp::setup() {
@@ -45,9 +49,8 @@ void testApp::update() {
 		camera_.disableMouseInput();
 	}
     
-    while (osc_receiver_.hasWaitingMessages()) {
-        ofxOscMessage message;
-        osc_receiver_.getNextMessage(&message);
+    ofxOscMessage message;
+    while (osc_receiver_.getNextMessage(&message)) {
         string address = message.getAddress();
         if (address == "/ball/position") {
             ball_.setPosition(message.getArgAsFloat(0) * .3, message.getArgAsFloat(1) * .3 + 10, message.getArgAsFloat(2) * .3);
@@ -65,6 +68,8 @@ void testApp::update() {
             q.slerp(getf("rotationAmount"), ofQuaternion(), q);
             stage0_.setOrientation(q);
             needs_update_motor_ = true;
+        } else if (address == "/world/state") {
+            cout << "World state: " << message.getArgAsString(0) << endl;
         }
     }
     
@@ -92,6 +97,14 @@ void testApp::update() {
 
 void testApp::draw() {
 	ofBackground(geti("backgroundColor"));
+    
+    if (getb("reloadShader")) {
+        auto it = calibration_meshes_.begin();
+        for (; it != calibration_meshes_.end(); it++) {
+            (*it)->reloadShader();
+        }
+        setb("reloadShader", false);
+    }
     if (getb("loadCalibration")) {
 		loadCalibration();
 		setb("loadCalibration", false);
@@ -104,6 +117,7 @@ void testApp::draw() {
         resetCalibration();
         setb("resetCalibration", false);
     }
+    
 	if (getb("selectionMode")) {
 		drawSelectionMode();
 	} else {
@@ -284,15 +298,19 @@ void testApp::setupMesh() {
         switch (i) {
             case 0:
                 mesh->loadTexture("ocean.png");
+                mesh->loadShader("shaders/ocean");
                 break;
             case 1:
-                mesh->color.set(64, 148, 65);
+//                mesh->color.set(64, 148, 65);
+                mesh->loadShader("shaders/bridge");
                 break;
             case 2:
-                mesh->color.set(219, 79, 79);
+//                mesh->color.set(219, 79, 79);
+                mesh->loadShader("shaders/elevator");
                 break;
             case 3:
                 mesh->loadTexture("http-aid-dcc.png");
+                mesh->loadShader("shaders/floor");
                 break;
         }
     }
@@ -309,7 +327,7 @@ void testApp::setupMesh() {
 
 
 void testApp::setupControlPanel() {
-	panel.setup("mapamokWWMMM", 10, 10, 300, 600);
+	panel.setup("mapamokWWMMM", 5, 5, 300, 700);
     //	panel.msg = "tab hides the panel, space toggles render/selection mode, 'f' toggles fullscreen.";
 	
 	panel.addPanel("Interaction");
@@ -330,6 +348,9 @@ void testApp::setupControlPanel() {
 //    shaderNames.push_back("lights");
 //    shaderNames.push_back("shader");
 //    panel.addMultiToggle("shading", "shading", 0, shaderNames );
+    panel.addSlider("white", "white", CalibrationMesh::white, 0.0, 1.0);
+    panel.addSlider("visibility", "visibility", CalibrationMesh::visibility, 0.0, 1.0);
+    panel.addToggle("reloadShader", "reloadShader", false);
 	panel.addToggle("loadCalibration", "loadCalibration", false);
 	panel.addToggle("saveCalibration", "saveCalibration", false);
 	panel.addToggle("resetCalibration", "resetCalibration", false);
@@ -568,6 +589,8 @@ void testApp::render() {
 		case 0: // faces
 //			glEnable(GL_CULL_FACE);
 //			glCullFace(GL_BACK);
+            CalibrationMesh::white = getf("white");
+            CalibrationMesh::visibility = getf("visibility");
             for (int i = 0; i < calibration_meshes_.size(); i++) {
                 calibration_meshes_[i]->draw();
             }

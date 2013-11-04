@@ -46,7 +46,10 @@ private:
 
 class CalibrationMesh : public ofNode {
 public:
-    CalibrationMesh(ofMesh &mesh) : useTexture(false) {
+    static float white;
+    static float visibility;
+    
+    CalibrationMesh(ofMesh &mesh) : useTexture(false), useShader(false) {
         object_mesh = mesh;
         int n = object_mesh.getNumVertices();
         points.resize(n);
@@ -71,13 +74,33 @@ public:
     
     bool loadTexture(string filename) {
         useTexture = texture.loadImage(filename);
+        return useTexture;
+    }
+    
+    bool loadShader(string filename) {
+        shader_name = filename;
+        useShader = shader.load(filename);
+        return useShader;
+    }
+    
+    void reloadShader() {
+        shader.unload();
+        useShader = shader.load(shader_name);
     }
     
     void customDraw() {
         ofPushStyle();
         ofSetColor(color);
         if (useTexture) texture.bind();
+        if (useShader) {
+            shader.begin();
+            shader.setUniformMatrix4f("modelMatrix", getLocalTransformMatrix());
+            if (useTexture) shader.setUniform1i("tex", 0);
+            shader.setUniform1f("white", CalibrationMesh::white);
+            shader.setUniform1f("visibility", CalibrationMesh::visibility);
+        }
         object_mesh.drawFaces();
+        if (useShader) shader.end();
         if (useTexture) texture.unbind();
         ofPopStyle();
     }
@@ -88,6 +111,9 @@ public:
     bool useTexture;
     ofImage texture;
     ofColor color;
+    string shader_name;
+    ofShader shader;
+    bool useShader;
     
 private:
     friend class boost::serialization::access;
