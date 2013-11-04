@@ -56,11 +56,16 @@ public:
 	ofxAssimpModelLoader model_;
 	ofEasyCam camera_;
     vector<CalibrationMesh*> calibration_meshes_;
-    Stage stage_;
+    Stage stage0_;
+    ofNode stage_;
     ofImage floor_texture_;
     ofImage ocean_texture_;
     Ball ball_;
+    ofNode root0_;
     ofNode root_;
+    
+    ofQuaternion target_orientation_;
+    ofQuaternion current_orientation_;
     
     int selected_mesh_;
     int selected_point_;

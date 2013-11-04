@@ -5,7 +5,7 @@ using namespace ofxCv;
 using namespace cv;
 
 
-#pragma mark - oF Event Handlers
+#pragma mark oF Event Handlers
 
 void testApp::setup() {
     ofSetLogLevel(OF_LOG_VERBOSE);
@@ -63,12 +63,18 @@ void testApp::update() {
             ofQuaternion q;
             q.set(message.getArgAsFloat(0), message.getArgAsFloat(1), message.getArgAsFloat(2), message.getArgAsFloat(3));
             q.slerp(getf("rotationAmount"), ofQuaternion(), q);
-            stage_.setOrientation(q);
+            stage0_.setOrientation(q);
             needs_update_motor_ = true;
         }
     }
     
-    if (needs_update_motor_) {
+    ofQuaternion q;
+    q.slerp(getf("rotationEasing"), stage_.getOrientationQuat(), stage0_.getOrientationQuat());
+    stage_.setOrientation(q);
+    root_.setPosition(root0_.getPosition().interpolate(root_.getPosition(), 1 - getf("elevationEasing")));
+    needs_update_motor_ = true;
+    
+    if (!getb("selectionMode")) {
         stage_.setPosition(0, 0, 0);
         if (!getb("setupMode")) {
             ofVec3f p = ball_.pre_jump_pos_;
@@ -79,6 +85,7 @@ void testApp::update() {
         motor_manager_.setTransformMatrix(stage_.getGlobalTransformMatrix());
         needs_update_motor_ = false;
     }
+    
     motor_manager_.update();
 }
 
@@ -131,27 +138,27 @@ void testApp::keyPressed(int key) {
     } else {
         switch (key) {
             case OF_KEY_UP:
-                root_.boom(speed);
+                root0_.boom(speed);
                 needs_update_motor_ = true;
                 break;
             case OF_KEY_DOWN:
-                root_.boom(-speed);
+                root0_.boom(-speed);
                 needs_update_motor_ = true;
                 break;
             case 'n':
-                stage_.roll(-speed);
+                stage0_.roll(-speed);
                 needs_update_motor_ = true;
                 break;
             case 'h':
-                stage_.roll(speed);
+                stage0_.roll(speed);
                 needs_update_motor_ = true;
                 break;
             case 'c':
-                stage_.pitch(-speed);
+                stage0_.pitch(-speed);
                 needs_update_motor_ = true;
                 break;
             case 't':
-                stage_.pitch(speed);
+                stage0_.pitch(speed);
                 needs_update_motor_ = true;
                 break;
         }
@@ -204,14 +211,16 @@ void testApp::keyPressed(int key) {
         case 'o':
         case 's':
             motor_manager_.initOrigin();
+            stage0_.resetTransform();
             stage_.resetTransform();
+            root0_.resetTransform();
             root_.resetTransform();
             needs_update_motor_ = true;
             break;
         case 'a':
             motor_manager_.reset();
-            stage_.resetTransform();
-            root_.resetTransform();
+            stage0_.resetTransform();
+            root0_.resetTransform();
             needs_update_motor_ = true;
             break;
         
@@ -220,8 +229,8 @@ void testApp::keyPressed(int key) {
         case '7':
         case '8':
         case '9':
-            stage_.resetTransform();
-            root_.setPosition(0, (key - '5' + 1) * 100, 0);
+            stage0_.resetTransform();
+            root0_.setPosition(0, (key - '5' + 1) * 100, 0);
             needs_update_motor_ = true;
             break;
     }
@@ -292,6 +301,8 @@ void testApp::setupMesh() {
     ball_.setParent(stage_);
     
     stage_.setParent(root_);
+    
+    stage0_.setParent(root0_);
 }
 
 
@@ -304,6 +315,8 @@ void testApp::setupControlPanel() {
 	panel.addSlider("scale", "scale", 1, .1, 3);
 	panel.addSlider("backgroundColor", "backgroundColor", 0, 0, 255, true);
     panel.addSlider("rotationAmount", "rotationAmount", 0.2, 0, 1);
+    panel.addSlider("rotationEasing", "rotationEasing", 0.1, 0, 1);
+    panel.addSlider("elevationEasing", "elevationEasing", 0.1, 0, 1);
     vector<string> boxNames;
     boxNames.push_back("faces");
     boxNames.push_back("fullWireframe");
