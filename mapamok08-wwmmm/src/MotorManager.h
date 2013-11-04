@@ -16,8 +16,8 @@
 class Motor {
 public:
     Motor() : current(0), destination(0) {}
-    int current;
-    int destination;
+    float current;
+    float destination;
 };
 
 
@@ -74,7 +74,7 @@ public:
     void setPosition(int index, float millimeter) {
         Motor *motor = motors_[index];
         millimeter = ofClamp(millimeter, -1000, 1000);
-        if (motor->destination == millimeter) return;
+        if (abs(motor->destination - millimeter) < 0.1) return;
         motor->destination = millimeter;
         
         int position = -millimeter / (50.0f * M_PI) * 200 * 128;
