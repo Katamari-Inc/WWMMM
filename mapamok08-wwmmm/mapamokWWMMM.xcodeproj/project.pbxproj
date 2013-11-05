@@ -41,6 +41,7 @@
 		2986D89B181C128400F89A26 /* pystring.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 2986D899181C128400F89A26 /* pystring.cpp */; };
 		29998F81181A1A9500919A87 /* ofxProCamToolkit.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 29998F7F181A1A9500919A87 /* ofxProCamToolkit.cpp */; };
 		29C54F1A182520510026CF10 /* libboost_serialization.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 29C54F19182520510026CF10 /* libboost_serialization.a */; };
+		29DC5CF81828948000F5B951 /* Models.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 29DC5CF71828948000F5B951 /* Models.cpp */; };
 		2B11014060CFA00EA494FBC6 /* guiTypeTextDropDown.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 4F64D7DD70C6B5B1FC395DED /* guiTypeTextDropDown.cpp */; };
 		314D78311D80062369E1827B /* guiTypeChartPlotter.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 3D66885FA7C19B7830EE08ED /* guiTypeChartPlotter.cpp */; };
 		3B8120368B4FCCD80883BAF3 /* ofxAssimpAnimation.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 36068D6C1D6D412786A5C4C1 /* ofxAssimpAnimation.cpp */; };
@@ -237,6 +238,7 @@
 		29998F7F181A1A9500919A87 /* ofxProCamToolkit.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = ofxProCamToolkit.cpp; sourceTree = "<group>"; };
 		29998F80181A1A9500919A87 /* ofxProCamToolkit.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ofxProCamToolkit.h; sourceTree = "<group>"; };
 		29C54F19182520510026CF10 /* libboost_serialization.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libboost_serialization.a; path = boost/lib/libboost_serialization.a; sourceTree = "<group>"; };
+		29DC5CF71828948000F5B951 /* Models.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Models.cpp; sourceTree = "<group>"; };
 		2B40EDA85BEB63E46785BC29 /* tinyxml.cpp */ = {isa = PBXFileReference; explicitFileType = sourcecode.cpp.cpp; fileEncoding = 30; name = tinyxml.cpp; path = ../../../addons/ofxXmlSettings/libs/tinyxml.cpp; sourceTree = SOURCE_ROOT; };
 		2D692A0570A93567D01B6D9D /* guiTypeTextDropDown.h */ = {isa = PBXFileReference; explicitFileType = sourcecode.c.h; fileEncoding = 30; name = guiTypeTextDropDown.h; path = ../../../addons/ofxControlPanel/src/guiTypeTextDropDown.h; sourceTree = SOURCE_ROOT; };
 		2E411F99E3AB7154484B4F96 /* kmeans_index.h */ = {isa = PBXFileReference; explicitFileType = sourcecode.c.h; fileEncoding = 30; name = kmeans_index.h; path = ../../../addons/ofxOpenCv/libs/opencv/include/opencv2/flann/kmeans_index.h; sourceTree = SOURCE_ROOT; };
@@ -1178,6 +1180,7 @@
 				E4B69E1F0A3A1BDC003C02F2 /* testApp.h */,
 				2986D89D181CF90C00F89A26 /* MotorManager.h */,
 				290E53311825980E00D6633B /* CalibrationData.h */,
+				29DC5CF71828948000F5B951 /* Models.cpp */,
 				290E5332182598B600D6633B /* Models.h */,
 				29998F7E181A1A9500919A87 /* ofxAutoControlPanel.h */,
 				2986D899181C128400F89A26 /* pystring.cpp */,
@@ -1489,6 +1492,7 @@
 				29766D17182831B6001BD749 /* ofxEasingQuint.cpp in Sources */,
 				29766D18182831B6001BD749 /* ofxEasingSine.cpp in Sources */,
 				29766D19182831B6001BD749 /* ofxTween.cpp in Sources */,
+				29DC5CF81828948000F5B951 /* Models.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
