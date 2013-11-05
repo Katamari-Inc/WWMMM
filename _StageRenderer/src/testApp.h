@@ -5,6 +5,7 @@
 #include "ofxFPSCam.h"
 #include "ofxOsc.h"
 #include "ofxGui.h"
+#include "Fireworks.h"
 
 
 class Ball : public ofNode {
@@ -225,6 +226,7 @@ public:
     Goal goal_;
     Ocean ocean2_;
     Ripple ripple_;
+    Fireworks fireworks_;
     
     ofxOscReceiver receiver_;
     

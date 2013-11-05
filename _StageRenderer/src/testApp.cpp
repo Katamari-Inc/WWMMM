@@ -59,6 +59,7 @@ void testApp::setup() {
     goal_.setup();
     ocean2_.setup();
     ripple_.setup();
+    fireworks_.setup();
     
     receiver_.setup(8001);
     
@@ -105,42 +106,41 @@ void testApp::draw() {
 //    ocean_.drawFaces();
 //    ocean_texture_.unbind();
 //    ocean2_.draw();
-    ripple_.draw();
+//    ripple_.draw();
+    fireworks_.draw();
     
-    ofPushMatrix();
-    ofTranslate(0, -p.y + 50, 0);
-    ofMultMatrix(stage_transform_matrix_);
+//    ofPushMatrix();
+//    ofTranslate(0, -p.y + 50, 0);
+//    ofMultMatrix(stage_transform_matrix_);
+//    
+//    ofPushStyle();
+//    ofSetColor(64, 148, 65);
+//    bridges_.drawFaces();
+//    ofPopStyle();
+//    
+//    ofPushStyle();
+//    ofSetColor(219, 79, 79);
+//    elevators_.drawFaces();
+//    ofPopStyle();
+//    
+//    glEnable(GL_POLYGON_OFFSET_FILL);
+//    glPolygonOffset(1.0, 1.0);
+//    floors_texture_.bind();
+//    floors_.drawFaces();
+//    floors_texture_.unbind();
+//    glDisable(GL_POLYGON_OFFSET_FILL);
     
-    ofPushStyle();
-    ofSetColor(64, 148, 65);
-    bridges_.drawFaces();
-    ofPopStyle();
-    
-    ofPushStyle();
-    ofSetColor(219, 79, 79);
-    elevators_.drawFaces();
-    ofPopStyle();
-    
-    glEnable(GL_POLYGON_OFFSET_FILL);
-    glPolygonOffset(1.0, 1.0);
-    floors_texture_.bind();
-    floors_.drawFaces();
-    floors_texture_.unbind();
-    glDisable(GL_POLYGON_OFFSET_FILL);
-    
-    ofPushStyle();
-    ofNoFill();
-    ofSetColor(255, 0, 0, 128);
-    ofSetLineWidth(1);
-    ofPushMatrix();
-    ofTranslate(0, 20, 0);
-//    ball_.drawWireframe();
-//    ball_.getMesh(0).drawWireframe();
-    ball_.draw();
-    ofPopMatrix();
-    ofPopStyle();
-
-    goal_.draw();
+//    ofPushStyle();
+//    ofNoFill();
+//    ofSetColor(255, 0, 0, 128);
+//    ofSetLineWidth(1);
+//    ofPushMatrix();
+//    ofTranslate(0, 20, 0);
+//    ball_.draw();
+//    ofPopMatrix();
+//    ofPopStyle();
+//
+//    goal_.draw();
     
     ofPopMatrix();
     
