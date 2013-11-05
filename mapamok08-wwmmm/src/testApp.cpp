@@ -95,6 +95,8 @@ void testApp::update() {
         } else if (address == "/ball/drop") {
             ripple_.start(ofVec3f(message.getArgAsFloat(0), message.getArgAsFloat(1), message.getArgAsFloat(2)) * 0.3);
             ball_.visible_ = false;
+        } else if (address == "/fireworks") {
+            explodeFireworks();
         }
     }
     
@@ -312,6 +314,9 @@ void testApp::keyPressed(int key) {
             
         case '0':
             ripple_.start(ofVec3f());
+            break;
+        case 'x':
+            explodeFireworks();
             break;
     }
 }
@@ -664,6 +669,9 @@ void testApp::render() {
             ball_.draw();
             goal_.draw();
             ripple_.draw();
+            for (auto it = fireworks_.begin(); it != fireworks_.end(); it++) {
+                (*it)->draw();
+            }
 			break;
 		case 1: // fullWireframe
             for (int i = 0; i < calibration_meshes_.size(); i++) {
@@ -850,6 +858,22 @@ void testApp::resetToTitle() {
     stage0_.resetTransform();
     root0_.resetTransform();
     needs_update_motor_ = true;
+}
+
+void testApp::explodeFireworks() {
+    Fireworks *fw = new Fireworks();
+    fw->setup();
+    ofAddListener(fw->completed, this, &testApp::fireworksCompleted);
+    ofVec3f p = ball_.getPosition();
+    fw->start(ofVec3f(p.x + ofRandomf() * 200, root0_.getPosition().y + 250, p.z + ofRandomf() * 200));
+    fireworks_.push_back(fw);
+}
+
+void testApp::fireworksCompleted(FireworksEventArgs &e) {
+    Fireworks *fw = fireworks_.front();
+    delete fw;
+    fireworks_.pop_front();
+    cout << "FW: " << fireworks_.size() << endl;
 }
 
 

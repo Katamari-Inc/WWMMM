@@ -83,3 +83,31 @@ public:
     float start_time_;
 };
 
+
+class Fireworks;
+
+class FireworksEventArgs : public ofEventArgs {
+public:
+    FireworksEventArgs(Fireworks *fw) : fireworks(fw) {}
+    Fireworks *fireworks;
+};
+
+
+class Fireworks : public ofNode {
+public:
+    void setup();
+    void start(ofVec3f position);
+    void customDraw();
+    
+    ofVboMesh mesh_;
+    vector<float> center_;
+    vector<float> offset_;
+    vector<float> speed_;
+    vector<float> axis_;
+    ofShader shader_;
+    ofImage palette_;
+    float start_time_;
+    bool moving_;
+    
+    ofEvent<FireworksEventArgs> completed;
+};

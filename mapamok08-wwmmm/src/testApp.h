@@ -35,6 +35,8 @@ public:
     
     void startIntro();
     void resetToTitle();
+    void explodeFireworks();
+    void fireworksCompleted(FireworksEventArgs &e);
     
 	void render();
 	void drawLabeledPoint(int label, ofVec2f position, ofColor color, ofColor bg = ofColor::black, ofColor fg = ofColor::white);
@@ -69,6 +71,7 @@ public:
     Ripple ripple_;
     ofNode root0_;
     ofNode root_;
+    deque<Fireworks*> fireworks_;
     
     ofQuaternion target_orientation_;
     ofQuaternion current_orientation_;
