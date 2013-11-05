@@ -57,9 +57,13 @@ void testApp::setup() {
     
     ball_.setup();
     goal_.setup();
+    ocean2_.setup();
+    ripple_.setup();
     
     receiver_.setup(8001);
     
+    camera_.setPosition(0, 400, 475);
+    camera_.lookAt(ofVec3f());
     camera_.setNearClip(1);
     camera_.move_speed *= 0.2;
     
@@ -97,9 +101,11 @@ void testApp::draw() {
     camera_.begin();
     ofDrawAxis(100);
     
-    ocean_texture_.bind();
-    ocean_.drawFaces();
-    ocean_texture_.unbind();
+//    ocean_texture_.bind();
+//    ocean_.drawFaces();
+//    ocean_texture_.unbind();
+//    ocean2_.draw();
+    ripple_.draw();
     
     ofPushMatrix();
     ofTranslate(0, -p.y + 50, 0);
@@ -154,7 +160,16 @@ void testApp::draw() {
 
 //--------------------------------------------------------------
 void testApp::keyPressed(int key) {
-    
+    switch (key) {
+        case ' ':
+            cout << camera_.getPosition() << endl;
+            cout << camera_.getOrientationQuat() << endl;
+            break;
+        case 'r':
+            ocean2_.reloadShader();
+            ripple_.reloadShader();
+            break;
+    }
 }
 
 //--------------------------------------------------------------
