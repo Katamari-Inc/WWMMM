@@ -66,6 +66,7 @@ public:
     ofImage ocean_texture_;
     Ball ball_;
     Goal goal_;
+    Ripple ripple_;
     ofNode root0_;
     ofNode root_;
     

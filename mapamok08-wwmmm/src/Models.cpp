@@ -20,10 +20,13 @@ void Ball::setup() {
     ball_ = loader_.getMesh(1);
     core_ = loader_.getMesh(0);
     jumping_ = true;
+    visible_ = false;
 }
 
 
 void Ball::customDraw() {
+    if (!visible_) return;
+    
     ofPushStyle();
     glDepthMask(GL_FALSE);
     ofSetLineWidth(5);
@@ -130,6 +133,7 @@ void Ripple::setup() {
 
 
 void Ripple::start(ofVec3f position) {
+    position.y = 0;
     setPosition(position);
     start_time_ = ofGetElapsedTimef();
 }
@@ -147,7 +151,7 @@ void Ripple::customDraw() {
     
     ofPushStyle();
     shader_.begin();
-    shader_.setUniform1f("radius", fmod(ofGetElapsedTimef(), 4.0f) / 4.0 * 500);
+    shader_.setUniform1f("radius", d / 4.0 * 500);
     shader_.setUniformTexture("palette", color_, 0);
     mesh_.drawFaces();
     shader_.end();

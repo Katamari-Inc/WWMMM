@@ -54,6 +54,7 @@ public:
     ofMesh core_;
     bool jumping_;
     ofVec3f pre_jump_pos_;
+    bool visible_;
 };
 
 

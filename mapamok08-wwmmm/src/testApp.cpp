@@ -85,11 +85,16 @@ void testApp::update() {
                 resetToTitle();
             } else if (world_state_ == "OPENING") {
                 startIntro();
+                ball_.visible_ = true;
+                ball_.setPosition(0, 250, 0);
             } else if (world_state_ == "FALLING" || world_state_ == "FLY_AWAY") {
                 stage0_.resetTransform();
                 stage_.resetTransform();
                 needs_update_motor_ = true;
             }
+        } else if (address == "/ball/drop") {
+            ripple_.start(ofVec3f(message.getArgAsFloat(0), message.getArgAsFloat(1), message.getArgAsFloat(2)) * 0.3);
+            ball_.visible_ = false;
         }
     }
     
@@ -304,6 +309,10 @@ void testApp::keyPressed(int key) {
         case 'v':
             resetToTitle();
             break;
+            
+        case '0':
+            ripple_.start(ofVec3f());
+            break;
     }
 }
 
@@ -376,6 +385,8 @@ void testApp::setupMesh() {
     goal_.setParent(stage_);
     stage_.setParent(root_);
     stage0_.setParent(root0_);
+    
+    ripple_.setup();
     
     white_tween_.setParameters(linear_easing_, ofxTween::easeOut, 1, 1, 0, 0);
     visibility_tween_.setParameters(linear_easing_, ofxTween::easeOut, 0, 0, 0, 0);
@@ -652,6 +663,7 @@ void testApp::render() {
             }
             ball_.draw();
             goal_.draw();
+            ripple_.draw();
 			break;
 		case 1: // fullWireframe
             for (int i = 0; i < calibration_meshes_.size(); i++) {
