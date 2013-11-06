@@ -70,22 +70,70 @@ public:
 class Ocean : public ofNode {
 public:
     void setup() {
-        int c = 610.0f / 20.0f;
-        int r = 910.0f / (sqrt(3) * 10.0f);
-        mesh_ = ofMesh::plane(610.0f, 910.0f, c, r);
-        ofVec3f *v = mesh_.getVerticesPointer();
-        for (int i = 0; i < r; i += 2, v += c * 2) {
-            for (int j = 1; j < c - 1; j++) {
-                v[j].x -= 10.0f;
+//        int c = 610.0f / 20.0f + 1;
+//        int r = 910.0f / (sqrt(3) * 10.0f) + 1;
+//        mesh_ = ofMesh::plane(610.0f, 910.0f, c, r, OF_PRIMITIVE_TRIANGLES);
+//        ofVec3f *v = mesh_.getVerticesPointer();
+//        for (int i = 0; i < 5; i += 2, v += c * 2) {
+//            for (int j = 0; j < c; j++) {
+//                v[j].x -= 10.0f;
+//            }
+//        }
+//        vector<ofMeshFace> tris = mesh_.getUniqueFaces();
+//        for (auto it = tris.begin(); it != tris.end(); it++) {
+//            ofFloatColor c(ofRandomuf(), ofRandomuf(), ofRandomuf());
+//            it->setColor(0, c);
+//            it->setColor(1, c);
+//            it->setColor(2, c);
+//        }
+//        mesh_.setFromTriangles(tris);
+        
+        mesh_.setMode(OF_PRIMITIVE_TRIANGLES);
+        
+        float w = 910;
+        float h = 610;
+        float l = 20;
+        float lx = l;
+        float lx2 = cos(ofDegToRad(60)) * l;
+        float ly = cos(ofDegToRad(30)) * l;
+        float nx = ceil(w / lx) + 2;
+        float ny = ceil(h / ly) + 2;
+        float centerX = ((nx - 1) * lx + lx2) / 2;
+        float centerY = (ny - 1) * ly / 2;
+        for (int y = 0; y < ny; y++) {
+            float offsetX = y % 2 ? 0 : lx2;
+            for (int x = 0; x < nx; x++) {
+                ofVec3f v = ofVec3f(x * lx + offsetX - centerX, 0, y * ly - centerY);
+                mesh_.addVertex(v);
+                mesh_.addTexCoord(ofVec2f((v.x - centerX) / w, (v.z - centerY) / h));
+                if (x > 0 && y > 0) {
+                    int i = (y - 1) * nx + x - 1;
+                    int j = y * nx + x - 1;
+                    if (y % 2) {
+                        mesh_.addTriangle(i, j + 1, j);
+                        mesh_.addTriangle(i, i + 1, j + 1);
+                    } else {
+                        mesh_.addTriangle(i, i + 1, j);
+                        mesh_.addTriangle(i + 1, j + 1, j);
+                    }
+                }
             }
         }
-        
+        vector<ofMeshFace> tris = mesh_.getUniqueFaces();
+        for (auto it = tris.begin(); it != tris.end(); it++) {
+            ofFloatColor c(ofRandomuf(), ofRandomuf(), ofRandomuf());
+            it->setColor(0, c);
+            it->setColor(1, c);
+            it->setColor(2, c);
+        }
+        mesh_.setFromTriangles(tris);
+
         face_texture_.loadImage("colors_line.png");
         line_texture_.loadImage("colors_line_dark.png");
         
         shader_.load("ocean");
         
-        setOrientation(ofVec3f(0, 90, 90));
+//        setOrientation(ofVec3f(0, 90, 90));
     }
     
     void reloadShader() {
@@ -98,19 +146,23 @@ public:
 
         glEnable(GL_POLYGON_OFFSET_FILL);
         glPolygonOffset(1.0, 1.0);
-        face_texture_.bind();
+//        face_texture_.bind();
+        line_texture_.bind();
         shader_.begin();
         shader_.setUniform1i("tex", 0);
         shader_.setUniform1f("tick", ofGetElapsedTimef());
+        shader_.setUniformMatrix4f("modelMatrix", getLocalTransformMatrix());
         mesh_.drawFaces();
         shader_.end();
-        face_texture_.unbind();
+//        face_texture_.unbind();
+        line_texture_.unbind();
         glDisable(GL_POLYGON_OFFSET_FILL);
 
         line_texture_.bind();
         shader_.begin();
         shader_.setUniform1i("tex", 0);
         shader_.setUniform1f("tick", ofGetElapsedTimef());
+        shader_.setUniformMatrix4f("modelMatrix", getLocalTransformMatrix());
         mesh_.drawWireframe();
         shader_.end();
         line_texture_.unbind();
@@ -202,16 +254,7 @@ public:
     void setup();
     void update();
     void draw();
-    
     void keyPressed(int key);
-    void keyReleased(int key);
-    void mouseMoved(int x, int y);
-    void mouseDragged(int x, int y, int button);
-    void mousePressed(int x, int y, int button);
-    void mouseReleased(int x, int y, int button);
-    void windowResized(int w, int h);
-    void dragEvent(ofDragInfo dragInfo);
-    void gotMessage(ofMessage msg);
     
     ofxAssimpModelLoader loader_;
     ofxFPSCam camera_;
@@ -236,3 +279,4 @@ public:
     ofxPanel panel_;
     ofxFloatSlider rotation_;
 };
+

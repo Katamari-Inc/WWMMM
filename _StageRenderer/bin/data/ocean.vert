@@ -129,21 +129,26 @@ vec3 RGBtoHSV(float r, float g, float b) {
 
 uniform sampler2D tex;
 uniform float tick;
+uniform mat4 modelMatrix;
 
+varying vec4 vPos;
+
+const vec2 size = vec2(910.0 + 800.0, 610.0);
+const vec3 variation = vec3(0., .05, .08);
 
 void main() {
-  vec3 color = texture2D(tex, gl_MultiTexCoord0.st).rgb;
+  vec3 color = texture2D(tex, gl_Vertex.zx / size.yx + 0.5).rgb;
   float h = snoise(gl_Vertex.xyz * sin(tick) * .5);
-  vec3 hsv = RGBtoHSV(color.r, color.g, color.b);
-  // hsv = vec3(0. + newColorAmplitude, 0. + newColorAmplitude, 1. );
-  float time = sin(tick) * .5 + .5;
-  float n1 = snoise(gl_Vertex.xyz + vec3(0, 0, time * .5));
-  float n2 = snoise(gl_Vertex.zxy + vec3(0, time * .5, 0.));
-  vec3 hsv2 = hsv + vec3(0., .05, .08) * vec3(0., n1, n2);
+  vec3 base = RGBtoHSV(color.r, color.g, color.b);
+  float time = tick * 0.5;
+  float n1 = snoise(gl_Color.rgb + vec3(0, 0, time));
+  float n2 = snoise(gl_Color.gbr + vec3(0, time, 0.));
+  vec3 hsv2 = base + variation * vec3(0., n1, n2);
   gl_FrontColor = vec4(HSVtoRGB(hsv2.x, hsv2.y, hsv2.z), 1.0);
-  // gl_FrontColor = vec4(vec3(n1, n2, 0.0), 1.0);
 
-  gl_Position = gl_ModelViewProjectionMatrix * (gl_Vertex + vec4(gl_Normal * snoise(gl_Vertex.xyz + tick * 0.1) * 10.0, 0.0));
+  float n = snoise(gl_Vertex.xyz * 0.01 + tick * 0.1);
+  vPos = gl_Vertex + n * vec4(10.0, 0.0, 10.0, 0.0);
+  gl_Position = gl_ModelViewProjectionMatrix * vPos;
   // gl_Position = ftransform();
-  gl_TexCoord[0] = gl_MultiTexCoord0;
+  // gl_TexCoord[0] = gl_MultiTexCoord0;
 }

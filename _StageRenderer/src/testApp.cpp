@@ -72,8 +72,10 @@ void testApp::setup() {
     
     receiver_.setup(8001);
     
-    camera_.setPosition(0, 400, 475);
-    camera_.lookAt(ofVec3f());
+//    camera_.setPosition(0, 400, 475);
+//    camera_.lookAt(ofVec3f());
+//    camera_.setPosition(0, 800, 0);
+//    camera_.setOrientation(ofQuaternion(-0.5, 0.5, 0.5, 0.5));
     camera_.setNearClip(1);
     camera_.move_speed *= 0.2;
     
@@ -114,7 +116,7 @@ void testApp::draw() {
 //    ocean_texture_.bind();
 //    ocean_.drawFaces();
 //    ocean_texture_.unbind();
-//    ocean2_.draw();
+    ocean2_.draw();
 //    ripple_.draw();
 //    fireworks_.draw();
     
@@ -122,33 +124,33 @@ void testApp::draw() {
     ofTranslate(0, -p.y + 50, 0);
     ofMultMatrix(stage_transform_matrix_);
     
-    ofPushStyle();
-    random_shader_.begin();
-    random_shader_.setUniform1f("tick", ofGetElapsedTimef());
-    random_shader_.setUniformTexture("random", random_texture_, 0);
-    random_shader_.setUniform3f("base", 0.33, 0.56, 0.58);
-    random_shader_.setUniform3f("variation", 0.0, 0.05, 0.08);
-    bridges_.drawFaces();
-    random_shader_.end();
-    ofPopStyle();
-    
-    ofPushStyle();
-    ofSetColor(219, 79, 79);
-    random_shader_.begin();
-    random_shader_.setUniform1f("tick", ofGetElapsedTimef());
-    random_shader_.setUniformTexture("random", random_texture_, 0);
-    random_shader_.setUniform3f("base", 0.0, 0.64, 0.86);
-    random_shader_.setUniform3f("variation", 0.0, 0.05, 0.08);
-    elevators_.drawFaces();
-    random_shader_.end();
-    ofPopStyle();
-    
-    glEnable(GL_POLYGON_OFFSET_FILL);
-    glPolygonOffset(1.0, 1.0);
-    floors_texture_.bind();
-    floors_.drawFaces();
-    floors_texture_.unbind();
-    glDisable(GL_POLYGON_OFFSET_FILL);
+//    ofPushStyle();
+//    random_shader_.begin();
+//    random_shader_.setUniform1f("tick", ofGetElapsedTimef());
+//    random_shader_.setUniformTexture("random", random_texture_, 0);
+//    random_shader_.setUniform3f("base", 0.33, 0.56, 0.58);
+//    random_shader_.setUniform3f("variation", 0.0, 0.05, 0.08);
+//    bridges_.drawFaces();
+//    random_shader_.end();
+//    ofPopStyle();
+//    
+//    ofPushStyle();
+//    ofSetColor(219, 79, 79);
+//    random_shader_.begin();
+//    random_shader_.setUniform1f("tick", ofGetElapsedTimef());
+//    random_shader_.setUniformTexture("random", random_texture_, 0);
+//    random_shader_.setUniform3f("base", 0.0, 0.64, 0.86);
+//    random_shader_.setUniform3f("variation", 0.0, 0.05, 0.08);
+//    elevators_.drawFaces();
+//    random_shader_.end();
+//    ofPopStyle();
+//    
+//    glEnable(GL_POLYGON_OFFSET_FILL);
+//    glPolygonOffset(1.0, 1.0);
+//    floors_texture_.bind();
+//    floors_.drawFaces();
+//    floors_texture_.unbind();
+//    glDisable(GL_POLYGON_OFFSET_FILL);
     
 //    ofPushStyle();
 //    ofNoFill();
@@ -181,10 +183,28 @@ void testApp::draw() {
 //--------------------------------------------------------------
 void testApp::keyPressed(int key) {
     switch (key) {
-        case ' ':
-            cout << camera_.getPosition() << endl;
-            cout << camera_.getOrientationQuat() << endl;
+        case '1': {
+            camera_.setPosition(183.455, 61.2889, 243.16);
+            camera_.setOrientation(ofQuaternion(-0.12015, 0.387389, 0.0510006, 0.91263));
             break;
+        }
+        case '2': {
+            camera_.setPosition(0, 800, 0);
+            camera_.setOrientation(ofQuaternion(-0.5, 0.5, 0.5, 0.5));
+            break;
+        }
+        case '3': {
+            camera_.setPosition(341.459, 437.179, 582.306);
+            camera_.setOrientation(ofQuaternion(-0.354013, 0.24081, 0.0948576, 0.898716));
+            break;
+        }
+        case ' ': {
+            ofQuaternion q = camera_.getOrientationQuat();
+            cout << "pos: " << camera_.getPosition() << endl;
+            cout << "qua: " << q.x() << ", " << q.y() << ", " << q.z() << ", " << q.w() << endl;
+            cout << "eul: " << camera_.getOrientationEuler() << endl;
+            break;
+        }
         case 'r':
             ocean2_.reloadShader();
             ripple_.reloadShader();
@@ -194,42 +214,3 @@ void testApp::keyPressed(int key) {
     }
 }
 
-//--------------------------------------------------------------
-void testApp::keyReleased(int key) {
-    
-}
-
-//--------------------------------------------------------------
-void testApp::mouseMoved(int x, int y) {
-    
-}
-
-//--------------------------------------------------------------
-void testApp::mouseDragged(int x, int y, int button) {
-    
-}
-
-//--------------------------------------------------------------
-void testApp::mousePressed(int x, int y, int button) {
-    
-}
-
-//--------------------------------------------------------------
-void testApp::mouseReleased(int x, int y, int button) {
-    
-}
-
-//--------------------------------------------------------------
-void testApp::windowResized(int w, int h) {
-    
-}
-
-//--------------------------------------------------------------
-void testApp::gotMessage(ofMessage msg) {
-    
-}
-
-//--------------------------------------------------------------
-void testApp::dragEvent(ofDragInfo dragInfo) {
-    
-}
