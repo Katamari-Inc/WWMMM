@@ -2,7 +2,7 @@
 
 //--------------------------------------------------------------
 void testApp::setup() {
-    ofSetLogLevel(OF_LOG_VERBOSE);
+//    ofSetLogLevel(OF_LOG_VERBOSE);
     ofSetVerticalSync(true);
     ofSetFrameRate(60);
 
@@ -15,7 +15,12 @@ void testApp::setup() {
     floors_ = loader_.getMesh(3);
 
     ofDisableArbTex();
-    floors_texture_.loadImage("http-aid-dcc.png");
+    ofPixels pixs;
+    ofLoadImage(pixs, "http-aid-dcc.png");
+    floors_texture_.setCompression(OF_COMPRESS_ARB);
+    floors_texture_.loadData(pixs);
+//    floors_texture_.setCompression(OF_COMPRESS_ARB);
+//    floors_texture_.loadImage("http-aid-dcc.png");
     ocean_texture_.loadImage("ocean.png");
     
 //    goal_.setScaleNomalization(false);

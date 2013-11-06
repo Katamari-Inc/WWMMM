@@ -219,7 +219,8 @@ public:
     ofMesh elevators_;
     ofMesh bridges_;
     ofMesh ocean_;
-    ofImage floors_texture_;
+//    ofImage floors_texture_;
+    ofTexture floors_texture_;
     ofImage ocean_texture_;
     ofMatrix4x4 stage_transform_matrix_;
     Ball ball_;

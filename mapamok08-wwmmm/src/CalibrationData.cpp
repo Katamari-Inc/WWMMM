@@ -48,7 +48,12 @@ ofVec3f CalibrationMesh::getProjected(int index) {
 
 
 bool CalibrationMesh::loadTexture(string filename) {
-    useTexture = texture.loadImage(filename);
+    ofPixels pixs;
+    useTexture = ofLoadImage(pixs, filename);
+    if (useTexture) {
+        texture.setCompression(OF_COMPRESS_ARB);
+        texture.loadData(pixs);
+    }
     return useTexture;
 }
 

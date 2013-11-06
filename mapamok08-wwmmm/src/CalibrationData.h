@@ -67,7 +67,7 @@ public:
 	ofMesh projected_mesh;
     vector<CalibrationPoint> points;
     bool useTexture;
-    ofImage texture;
+    ofTexture texture;
     string shader_name;
     ofShader shader;
     bool useShader;
