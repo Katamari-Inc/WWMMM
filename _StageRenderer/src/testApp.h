@@ -6,6 +6,7 @@
 #include "ofxOsc.h"
 #include "ofxGui.h"
 #include "ofxTween.h"
+#include "ofxJSONElement.h"
 #include "Fireworks.h"
 
 
@@ -233,6 +234,96 @@ public:
 };
 
 
+class SmallItems : public ofNode {
+    
+    class Ripple : public ofNode {
+        static ofxEasingLinear linear_easing;
+        static ofxEasingCubic cubic_easing;
+    public:
+        void setup(ofVec3f p) {
+            position = p;
+            radius.setParameters(cubic_easing, ofxTween::easeOut, 0, 10, 1000, 0);
+            alpha.setParameters(linear_easing, ofxTween::easeInOut, 255, 0, 500, 500);
+            setPosition(p);
+            setOrientation(ofVec3f(90, 0, 0));
+        }
+        void customDraw() {
+            ofSetColor(17, 195, 210, alpha.update());
+            ofCircle(0, 0, 0, radius.update());
+        }
+        ofVec3f position;
+        ofxTween radius;
+        ofxTween alpha;
+    };
+    
+public:
+    static float white;
+    void setup(Json::Value &points) {
+        mesh_.setMode(OF_PRIMITIVE_POINTS);
+        ofFloatColor c(17, 195, 210);
+        c /= 255.0;
+        int n = points.size();
+        for (int i = 0; i < n; i += 3) {
+            ofVec3f v;
+            v.x = points[i].asFloat() - 512;
+            v.z = points[i + 1].asFloat() - 679;
+            v.y = points[i + 2].asFloat() + 6;
+            v *= 0.3;
+            mesh_.addVertex(v);
+            mesh_.addColor(c);
+        }
+        shader_.load("smallitems");
+        setPosition(0, 20, 0);
+    }
+    
+    void remove(int index) {
+        ofVec3f v = mesh_.getVertex(index);
+        mesh_.setColor(index, ofFloatColor(0));
+        Ripple *r = new Ripple();
+        r->setup(v);
+        ofAddListener(r->radius.end_E, this, &SmallItems::rippleComplete);
+        ripples_.push_back(r);
+    }
+    
+    void rippleComplete(int &i) {
+        Ripple *r = ripples_.front();
+        ripples_.pop_front();
+        delete r;
+    }
+    
+    void reset() {
+        ofFloatColor c(17, 195, 210);
+        c /= 255.0;
+        for (int i = 0; i < mesh_.getNumVertices(); i++) {
+            mesh_.setColor(i, c);
+        }
+    }
+    
+    void customDraw() {
+        ofPushStyle();
+        glEnable(GL_VERTEX_PROGRAM_POINT_SIZE);
+        shader_.begin();
+        shader_.setUniform1f("white", white);
+        mesh_.drawVertices();
+        shader_.end();
+        
+        ofNoFill();
+        ofSetColor(255, 0, 0);
+        ofSetLineWidth(1);
+        ofDisableDepthTest();
+        for (auto it = ripples_.begin(); it != ripples_.end(); it++) {
+            (*it)->draw();
+        }
+        ofEnableDepthTest();
+        
+        ofPopStyle();
+    }
+    
+    ofMesh mesh_;
+    ofShader shader_;
+    deque<Ripple*> ripples_;
+};
+
 
 class testApp : public ofBaseApp {
     
@@ -258,6 +349,7 @@ public:
     Ocean ocean2_;
     Ripple ripple_;
     Fireworks fireworks_;
+    SmallItems small_items_;
     ofShader random_shader_;
     ofImage random_texture_;
     

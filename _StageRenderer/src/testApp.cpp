@@ -1,5 +1,9 @@
 #include "testApp.h"
 
+ofxEasingLinear SmallItems::Ripple::linear_easing;
+ofxEasingCubic SmallItems::Ripple::cubic_easing;
+float SmallItems::white = 0.5;
+
 //--------------------------------------------------------------
 void testApp::setup() {
 //    ofSetLogLevel(OF_LOG_VERBOSE);
@@ -66,11 +70,13 @@ void testApp::setup() {
     ripple_.setup();
     fireworks_.setup();
     
+    ofxJSONElement result;
+    result.open("http-aid-dcc.json");
+    small_items_.setup(result["small_items"]);
+    
     random_shader_.load("bridge");
     random_texture_.loadImage("random.png");
     random_texture_.getTextureReference().setTextureWrap(GL_REPEAT, GL_REPEAT);
-    
-    receiver_.setup(8001);
     
 //    camera_.setPosition(0, 400, 475);
 //    camera_.lookAt(ofVec3f());
@@ -78,6 +84,8 @@ void testApp::setup() {
 //    camera_.setOrientation(ofQuaternion(-0.5, 0.5, 0.5, 0.5));
     camera_.setNearClip(1);
     camera_.move_speed *= 0.2;
+    
+    receiver_.setup(8001);
     
     panel_.setup();
     panel_.add(rotation_.setup("Rotation", 0.2f, 0.0f, 1.0f));
@@ -132,33 +140,33 @@ void testApp::draw() {
     ofTranslate(0, -p.y + 50, 0);
     ofMultMatrix(stage_transform_matrix_);
     
-//    ofPushStyle();
-//    random_shader_.begin();
-//    random_shader_.setUniform1f("tick", ofGetElapsedTimef());
-//    random_shader_.setUniformTexture("random", random_texture_, 0);
-//    random_shader_.setUniform3f("base", 0.33, 0.56, 0.58);
-//    random_shader_.setUniform3f("variation", 0.0, 0.05, 0.08);
-//    bridges_.drawFaces();
-//    random_shader_.end();
-//    ofPopStyle();
-//    
-//    ofPushStyle();
-//    ofSetColor(219, 79, 79);
-//    random_shader_.begin();
-//    random_shader_.setUniform1f("tick", ofGetElapsedTimef());
-//    random_shader_.setUniformTexture("random", random_texture_, 0);
-//    random_shader_.setUniform3f("base", 0.0, 0.64, 0.86);
-//    random_shader_.setUniform3f("variation", 0.0, 0.05, 0.08);
-//    elevators_.drawFaces();
-//    random_shader_.end();
-//    ofPopStyle();
-//    
-//    glEnable(GL_POLYGON_OFFSET_FILL);
-//    glPolygonOffset(1.0, 1.0);
-//    floors_texture_.bind();
-//    floors_.drawFaces();
-//    floors_texture_.unbind();
-//    glDisable(GL_POLYGON_OFFSET_FILL);
+    ofPushStyle();
+    random_shader_.begin();
+    random_shader_.setUniform1f("tick", ofGetElapsedTimef());
+    random_shader_.setUniformTexture("random", random_texture_, 0);
+    random_shader_.setUniform3f("base", 0.33, 0.56, 0.58);
+    random_shader_.setUniform3f("variation", 0.0, 0.05, 0.08);
+    bridges_.drawFaces();
+    random_shader_.end();
+    ofPopStyle();
+    
+    ofPushStyle();
+    ofSetColor(219, 79, 79);
+    random_shader_.begin();
+    random_shader_.setUniform1f("tick", ofGetElapsedTimef());
+    random_shader_.setUniformTexture("random", random_texture_, 0);
+    random_shader_.setUniform3f("base", 0.0, 0.64, 0.86);
+    random_shader_.setUniform3f("variation", 0.0, 0.05, 0.08);
+    elevators_.drawFaces();
+    random_shader_.end();
+    ofPopStyle();
+    
+    glEnable(GL_POLYGON_OFFSET_FILL);
+    glPolygonOffset(1.0, 1.0);
+    floors_texture_.bind();
+    floors_.drawFaces();
+    floors_texture_.unbind();
+    glDisable(GL_POLYGON_OFFSET_FILL);
     
 //    ofPushStyle();
 //    ofNoFill();
@@ -169,7 +177,10 @@ void testApp::draw() {
 //    ball_.draw();
 //    ofPopMatrix();
 //    ofPopStyle();
-//
+
+    SmallItems::white = white_;
+    small_items_.draw();
+    
 //    goal_.draw();
     
     ofPopMatrix();
@@ -219,6 +230,15 @@ void testApp::keyPressed(int key) {
             random_shader_.unload();
             random_shader_.load("bridge");
             break;
+            
+        case 'q': {
+            small_items_.remove(ofRandom(500));
+            break;
+        }
+        case 'j': {
+            small_items_.reset();
+            break;
+        }
     }
 }
 
