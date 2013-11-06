@@ -227,6 +227,8 @@ public:
     Ocean ocean2_;
     Ripple ripple_;
     Fireworks fireworks_;
+    ofShader random_shader_;
+    ofImage random_texture_;
     
     ofxOscReceiver receiver_;
     
