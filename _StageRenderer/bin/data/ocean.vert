@@ -127,14 +127,19 @@ vec3 RGBtoHSV(float r, float g, float b) {
 
 //-----------------------------------------------------------------------------
 
+float rand(vec2 n) {
+  return fract(sin(dot(n.xy, vec2(12.9898, 78.233))) * 43758.5453);
+}
+
 uniform sampler2D tex;
 uniform float tick;
 uniform mat4 modelMatrix;
+uniform float white;
 
 varying vec4 vPos;
 
 const vec2 size = vec2(910.0 + 800.0, 610.0);
-const vec3 variation = vec3(0., .05, .08);
+const vec3 variation = vec3(0.0, 0.05, 0.08);
 
 void main() {
   vec3 color = texture2D(tex, gl_Vertex.zx / size.yx + 0.5).rgb;
@@ -144,7 +149,11 @@ void main() {
   float n1 = snoise(gl_Color.rgb + vec3(0, 0, time));
   float n2 = snoise(gl_Color.gbr + vec3(0, time, 0.));
   vec3 hsv2 = base + variation * vec3(0., n1, n2);
-  gl_FrontColor = vec4(HSVtoRGB(hsv2.x, hsv2.y, hsv2.z), 1.0);
+  if (gl_Color.r < smoothstep(0.0, 1.0 + rand(gl_Color.rg + white) * 0.1 * max(1.0 - white, 0.0), white)) {
+    gl_FrontColor = vec4(HSVtoRGB(hsv2.x, hsv2.y, hsv2.z), 1.0);
+  } else {
+    gl_FrontColor = vec4(1.0);
+  }
 
   float n = snoise(gl_Vertex.xyz * 0.01 + tick * 0.1);
   vPos = gl_Vertex + n * vec4(10.0, 0.0, 10.0, 0.0);

@@ -81,6 +81,9 @@ void testApp::setup() {
     
     panel_.setup();
     panel_.add(rotation_.setup("Rotation", 0.2f, 0.0f, 1.0f));
+    panel_.add(white_.setup("White", 1.0f, 0.0f, 1.0f));
+    panel_.add(go_button_.setup("Go"));
+    go_button_.addListener(this, &testApp::goClicked);
 }
 
 //--------------------------------------------------------------
@@ -101,6 +104,10 @@ void testApp::update() {
             stage_transform_matrix_.makeRotationMatrix(q);
         }
     }
+    
+    if (white_tween_.isRunning()) {
+        white_ = white_tween_.update();
+    }
 }
 
 //--------------------------------------------------------------
@@ -116,6 +123,7 @@ void testApp::draw() {
 //    ocean_texture_.bind();
 //    ocean_.drawFaces();
 //    ocean_texture_.unbind();
+    ocean2_.white = white_;
     ocean2_.draw();
 //    ripple_.draw();
 //    fireworks_.draw();
@@ -214,3 +222,9 @@ void testApp::keyPressed(int key) {
     }
 }
 
+
+ofxEasingLinear linear_easing;
+
+void testApp::goClicked() {
+    white_tween_.setParameters(linear_easing, ofxTween::easeInOut, 0, 1, 3000, 0);
+}

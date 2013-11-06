@@ -20,7 +20,7 @@ void CalibrationMesh::setup() {
 }
 
 
-CalibrationMesh::CalibrationMesh(ofMesh &mesh) : useTexture(false), useShader(false), polygonOffset(0) {
+CalibrationMesh::CalibrationMesh(ofMesh &mesh) : visible(true), useTexture(false), useShader(false), polygonOffset(0) {
     object_mesh = mesh;
     int n = object_mesh.getNumVertices();
     points.resize(n);
@@ -72,6 +72,8 @@ void CalibrationMesh::reloadShader() {
 
 
 void CalibrationMesh::customDraw() {
+    if (!visible) return;
+    
     ofPushStyle();
     if (polygonOffset) {
         glEnable(GL_POLYGON_OFFSET_FILL);

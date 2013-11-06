@@ -65,7 +65,8 @@ public:
     Stage stage0_;
     ofNode stage_;
     ofImage floor_texture_;
-    ofImage ocean_texture_;
+    Ocean ocean_;
+//    ofImage ocean_texture_;
     Ball ball_;
     Goal goal_;
     Ripple ripple_;
@@ -80,6 +81,7 @@ public:
     ofxTween visibility_tween_;
     ofxTween stage_level_tween_;
     ofxTween stage_tilt_tween_;
+    ofxTween rotation_amount_tween_;
     
     int selected_mesh_;
     int selected_point_;

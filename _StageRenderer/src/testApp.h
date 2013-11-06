@@ -5,6 +5,7 @@
 #include "ofxFPSCam.h"
 #include "ofxOsc.h"
 #include "ofxGui.h"
+#include "ofxTween.h"
 #include "Fireworks.h"
 
 
@@ -70,24 +71,6 @@ public:
 class Ocean : public ofNode {
 public:
     void setup() {
-//        int c = 610.0f / 20.0f + 1;
-//        int r = 910.0f / (sqrt(3) * 10.0f) + 1;
-//        mesh_ = ofMesh::plane(610.0f, 910.0f, c, r, OF_PRIMITIVE_TRIANGLES);
-//        ofVec3f *v = mesh_.getVerticesPointer();
-//        for (int i = 0; i < 5; i += 2, v += c * 2) {
-//            for (int j = 0; j < c; j++) {
-//                v[j].x -= 10.0f;
-//            }
-//        }
-//        vector<ofMeshFace> tris = mesh_.getUniqueFaces();
-//        for (auto it = tris.begin(); it != tris.end(); it++) {
-//            ofFloatColor c(ofRandomuf(), ofRandomuf(), ofRandomuf());
-//            it->setColor(0, c);
-//            it->setColor(1, c);
-//            it->setColor(2, c);
-//        }
-//        mesh_.setFromTriangles(tris);
-        
         mesh_.setMode(OF_PRIMITIVE_TRIANGLES);
         
         float w = 910;
@@ -133,7 +116,7 @@ public:
         
         shader_.load("ocean");
         
-//        setOrientation(ofVec3f(0, 90, 90));
+//        setOrientation(ofVec3f(0, 30, 0));
     }
     
     void reloadShader() {
@@ -147,25 +130,27 @@ public:
         glEnable(GL_POLYGON_OFFSET_FILL);
         glPolygonOffset(1.0, 1.0);
 //        face_texture_.bind();
-        line_texture_.bind();
+//        line_texture_.bind();
         shader_.begin();
-        shader_.setUniform1i("tex", 0);
+//        shader_.setUniform1i("tex", 0);
+        shader_.setUniformTexture("tex", line_texture_, 0);
         shader_.setUniform1f("tick", ofGetElapsedTimef());
         shader_.setUniformMatrix4f("modelMatrix", getLocalTransformMatrix());
+        shader_.setUniform1f("white", white);
         mesh_.drawFaces();
         shader_.end();
 //        face_texture_.unbind();
-        line_texture_.unbind();
+//        line_texture_.unbind();
         glDisable(GL_POLYGON_OFFSET_FILL);
 
-        line_texture_.bind();
-        shader_.begin();
-        shader_.setUniform1i("tex", 0);
-        shader_.setUniform1f("tick", ofGetElapsedTimef());
-        shader_.setUniformMatrix4f("modelMatrix", getLocalTransformMatrix());
-        mesh_.drawWireframe();
-        shader_.end();
-        line_texture_.unbind();
+//        line_texture_.bind();
+//        shader_.begin();
+//        shader_.setUniform1i("tex", 0);
+//        shader_.setUniform1f("tick", ofGetElapsedTimef());
+//        shader_.setUniformMatrix4f("modelMatrix", getLocalTransformMatrix());
+//        mesh_.drawWireframe();
+//        shader_.end();
+//        line_texture_.unbind();
 
         ofPopStyle();
     }
@@ -174,6 +159,7 @@ public:
     ofImage face_texture_;
     ofImage line_texture_;
     ofShader shader_;
+    float white;
 };
 
 
@@ -255,6 +241,7 @@ public:
     void update();
     void draw();
     void keyPressed(int key);
+    void goClicked();
     
     ofxAssimpModelLoader loader_;
     ofxFPSCam camera_;
@@ -278,5 +265,9 @@ public:
     
     ofxPanel panel_;
     ofxFloatSlider rotation_;
+    ofxFloatSlider white_;
+    ofxButton go_button_;
+
+    ofxTween white_tween_;
 };
 

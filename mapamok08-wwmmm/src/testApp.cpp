@@ -12,7 +12,7 @@ ofxEasingCubic cubic_easing_;
 #pragma mark oF Event Handlers
 
 void testApp::setup() {
-    ofSetLogLevel(OF_LOG_VERBOSE);
+//    ofSetLogLevel(OF_LOG_VERBOSE);
     ofSetDrawBitmapMode(OF_BITMAPMODE_MODEL_BILLBOARD);
     ofSetVerticalSync(true);
 //    ofSetFullscreen(true);
@@ -71,7 +71,7 @@ void testApp::update() {
             if (world_state_ == "GAME") {
                 ofQuaternion q;
                 q.set(message.getArgAsFloat(0), message.getArgAsFloat(1), message.getArgAsFloat(2), message.getArgAsFloat(3));
-                q.slerp(getf("rotationAmount"), ofQuaternion(), q);
+                q.slerp(getf("rotationAmount") * rotation_amount_tween_.update(), ofQuaternion(), q);
                 stage0_.setOrientation(q);
                 needs_update_motor_ = true;
             }
@@ -84,6 +84,8 @@ void testApp::update() {
                 startIntro();
                 ball_.visible_ = true;
                 ball_.setPosition(0, 250, 0);
+            } else if (world_state_ == "GAME") {
+                rotation_amount_tween_.setParameters(cubic_easing_, ofxTween::easeInOut, 0, 1, 2000, 0);
             } else if (world_state_ == "FALLING" || world_state_ == "FLY_AWAY") {
                 stage0_.resetTransform();
                 stage_.resetTransform();
@@ -366,8 +368,9 @@ void testApp::setupMesh() {
         }
         switch (i) {
             case 0:
-                mesh->loadTexture("ocean.png");
-                mesh->loadShader("shaders/ocean");
+//                mesh->loadTexture("colors_line_dark.png");
+//                mesh->loadShader("shaders/ocean");
+                mesh->visible = false;
                 break;
             case 1:
                 mesh->loadShader("shaders/bridge");
@@ -389,7 +392,7 @@ void testApp::setupMesh() {
     goal_.setParent(stage_);
     stage_.setParent(root_);
     stage0_.setParent(root0_);
-    
+    ocean_.setup();
     ripple_.setup();
     
     white_tween_.setParameters(linear_easing_, ofxTween::easeOut, 1, 1, 0, 0);
@@ -660,6 +663,7 @@ void testApp::render() {
 		case 0: // faces
 //			glEnable(GL_CULL_FACE);
 //			glCullFace(GL_BACK);
+            ocean_.draw();
             CalibrationMesh::white = getf("white");
             CalibrationMesh::visibility = getf("visibility");
             for (int i = 0; i < calibration_meshes_.size(); i++) {
@@ -842,7 +846,7 @@ void testApp::drawRenderMode() {
 #pragma mark - Scene control
 
 void testApp::startIntro() {
-    white_tween_.setParameters(linear_easing_, ofxTween::easeInOut, 1, 0, 3000, 2000);
+    white_tween_.setParameters(linear_easing_, ofxTween::easeInOut, 1, 0, 8000, 2000);
     stage_level_tween_.setParameters(cubic_easing_, ofxTween::easeInOut, 0, 1, 10000, 0);
     stage_tilt_tween_.setParameters(cubic_easing_, ofxTween::easeInOut, 0, 1, 10000, 3000);
     visibility_tween_.setParameters(linear_easing_, ofxTween::easeInOut, 0, 1, 5000, 10000);
@@ -850,8 +854,9 @@ void testApp::startIntro() {
 
 
 void testApp::resetToTitle() {
-    white_tween_.setParameters(linear_easing_, ofxTween::easeInOut, 0, 1, 3000, 0);
-    visibility_tween_.setParameters(linear_easing_, ofxTween::easeInOut, 1, 1, 0, 3000);
+    white_tween_.setParameters(linear_easing_, ofxTween::easeInOut, 0, 1, 2000, 0);
+    visibility_tween_.setParameters(linear_easing_, ofxTween::easeInOut, 1, 1, 0, 2000);
+    rotation_amount_tween_.setParameters(cubic_easing_, ofxTween::easeInOut, 1, 1, 0, 0);
 
     motor_manager_.reset();
     stage0_.resetTransform();

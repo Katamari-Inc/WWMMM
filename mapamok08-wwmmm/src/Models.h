@@ -84,6 +84,17 @@ public:
 };
 
 
+class Ocean : public ofNode {
+public:
+    void setup();
+    void customDraw();
+    
+    ofMesh mesh_;
+    ofShader shader_;
+    ofImage texture_;
+};
+
+
 class Fireworks;
 
 class FireworksEventArgs : public ofEventArgs {

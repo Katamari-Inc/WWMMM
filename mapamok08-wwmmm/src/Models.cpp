@@ -160,6 +160,70 @@ void Ripple::customDraw() {
 
 
 //--------------------------------------------------------------------------------------------------
+#pragma mark - Ocean
+
+void Ocean::setup() {
+    mesh_.setMode(OF_PRIMITIVE_TRIANGLES);
+    
+    float w = 910;
+    float h = 610;
+    float l = 20;
+    float lx = l;
+    float lx2 = cos(ofDegToRad(60)) * l;
+    float ly = cos(ofDegToRad(30)) * l;
+    float nx = ceil(w / lx) + 2;
+    float ny = ceil(h / ly) + 2;
+    float centerX = ((nx - 1) * lx + lx2) / 2;
+    float centerY = (ny - 1) * ly / 2;
+    for (int y = 0; y < ny; y++) {
+        float offsetX = y % 2 ? 0 : lx2;
+        for (int x = 0; x < nx; x++) {
+            ofVec3f v = ofVec3f(x * lx + offsetX - centerX, 0, y * ly - centerY);
+            mesh_.addVertex(v);
+            mesh_.addTexCoord(ofVec2f((v.x - centerX) / w, (v.z - centerY) / h));
+            if (x > 0 && y > 0) {
+                int i = (y - 1) * nx + x - 1;
+                int j = y * nx + x - 1;
+                if (y % 2) {
+                    mesh_.addTriangle(i, j + 1, j);
+                    mesh_.addTriangle(i, i + 1, j + 1);
+                } else {
+                    mesh_.addTriangle(i, i + 1, j);
+                    mesh_.addTriangle(i + 1, j + 1, j);
+                }
+            }
+        }
+    }
+    vector<ofMeshFace> tris = mesh_.getUniqueFaces();
+    for (auto it = tris.begin(); it != tris.end(); it++) {
+        ofFloatColor c(ofRandomuf(), ofRandomuf(), ofRandomuf());
+        it->setColor(0, c);
+        it->setColor(1, c);
+        it->setColor(2, c);
+    }
+    mesh_.setFromTriangles(tris);
+    
+    shader_.load("shaders/ocean");
+    texture_.loadImage("colors_line_dark.png");
+    
+    setPosition(0, 0, -21);
+}
+
+
+void Ocean::customDraw() {
+    ofPushStyle();
+    shader_.begin();
+    shader_.setUniformTexture("tex", texture_, 0);
+    shader_.setUniform1f("tick", ofGetElapsedTimef());
+    shader_.setUniformMatrix4f("modelMatrix", getLocalTransformMatrix());
+    shader_.setUniform1f("white", 1.0 - CalibrationMesh::white);
+    mesh_.drawFaces();
+    shader_.end();
+    ofPopStyle();
+}
+
+
+//--------------------------------------------------------------------------------------------------
 #pragma mark - Fireworks
 
 void Fireworks::setup() {

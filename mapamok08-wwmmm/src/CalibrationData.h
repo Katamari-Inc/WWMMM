@@ -66,6 +66,8 @@ public:
 	ofVboMesh object_mesh;
 	ofMesh projected_mesh;
     vector<CalibrationPoint> points;
+
+    bool visible;
     bool useTexture;
     ofTexture texture;
     string shader_name;
