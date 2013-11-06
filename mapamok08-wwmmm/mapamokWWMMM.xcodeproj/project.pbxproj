@@ -25,6 +25,7 @@
 		2937ECE8181E9DA100FD9940 /* ofxOscParameterSync.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 2937ECD7181E9DA100FD9940 /* ofxOscParameterSync.cpp */; };
 		2937ECE9181E9DA100FD9940 /* ofxOscReceiver.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 2937ECD9181E9DA100FD9940 /* ofxOscReceiver.cpp */; };
 		2937ECEA181E9DA100FD9940 /* ofxOscSender.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 2937ECDB181E9DA100FD9940 /* ofxOscSender.cpp */; };
+		296BF66D182A257B003C2A0E /* CalibrationData.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 296BF66C182A257B003C2A0E /* CalibrationData.cpp */; };
 		29766D0D182831B6001BD749 /* ofxEasing.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 29766CF3182831B6001BD749 /* ofxEasing.cpp */; };
 		29766D0E182831B6001BD749 /* ofxEasingBack.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 29766CF5182831B6001BD749 /* ofxEasingBack.cpp */; };
 		29766D0F182831B6001BD749 /* ofxEasingBounce.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 29766CF7182831B6001BD749 /* ofxEasingBounce.cpp */; };
@@ -202,6 +203,7 @@
 		2937ECDA181E9DA100FD9940 /* ofxOscReceiver.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ofxOscReceiver.h; sourceTree = "<group>"; };
 		2937ECDB181E9DA100FD9940 /* ofxOscSender.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = ofxOscSender.cpp; sourceTree = "<group>"; };
 		2937ECDC181E9DA100FD9940 /* ofxOscSender.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ofxOscSender.h; sourceTree = "<group>"; };
+		296BF66C182A257B003C2A0E /* CalibrationData.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = CalibrationData.cpp; sourceTree = "<group>"; };
 		29766CF2182831B6001BD749 /* easing_terms_of_use.html */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.html; path = easing_terms_of_use.html; sourceTree = "<group>"; };
 		29766CF3182831B6001BD749 /* ofxEasing.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = ofxEasing.cpp; sourceTree = "<group>"; };
 		29766CF4182831B6001BD749 /* ofxEasing.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ofxEasing.h; sourceTree = "<group>"; };
@@ -1180,6 +1182,7 @@
 				E4B69E1F0A3A1BDC003C02F2 /* testApp.h */,
 				2986D89D181CF90C00F89A26 /* MotorManager.h */,
 				290E53311825980E00D6633B /* CalibrationData.h */,
+				296BF66C182A257B003C2A0E /* CalibrationData.cpp */,
 				29DC5CF71828948000F5B951 /* Models.cpp */,
 				290E5332182598B600D6633B /* Models.h */,
 				29998F7E181A1A9500919A87 /* ofxAutoControlPanel.h */,
@@ -1493,6 +1496,7 @@
 				29766D18182831B6001BD749 /* ofxEasingSine.cpp in Sources */,
 				29766D19182831B6001BD749 /* ofxTween.cpp in Sources */,
 				29DC5CF81828948000F5B951 /* Models.cpp in Sources */,
+				296BF66D182A257B003C2A0E /* CalibrationData.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

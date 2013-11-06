@@ -47,74 +47,31 @@ private:
 
 class CalibrationMesh : public ofNode {
 public:
+    static void setup();
+    static ofImage random;
     static float white;
     static float visibility;
     
-    CalibrationMesh(ofMesh &mesh) : useTexture(false), useShader(false) {
-        object_mesh = mesh;
-        int n = object_mesh.getNumVertices();
-        points.resize(n);
-        reset();
-    }
+    CalibrationMesh(ofMesh &mesh);
     
-    void reset() {
-        for (int i = 0; i < points.size(); i++) {
-            points[i].object = object_mesh.getVertex(i);
-            points[i].image.set(0);
-            points[i].enabled = false;
-        }
-    }
+    void reset();
+    void project();
+    ofVec3f getProjected(int index);
     
-    void project() {
-        projected_mesh = getProjectedMesh(object_mesh);
-    }
-    
-    ofVec3f getProjected(int index) {
-        return projected_mesh.getVertex(index);
-    }
-    
-    bool loadTexture(string filename) {
-        useTexture = texture.loadImage(filename);
-        return useTexture;
-    }
-    
-    bool loadShader(string filename) {
-        shader_name = filename;
-        useShader = shader.load(filename);
-        return useShader;
-    }
-    
-    void reloadShader() {
-        shader.unload();
-        useShader = shader.load(shader_name);
-    }
-    
-    void customDraw() {
-        ofPushStyle();
-        ofSetColor(color);
-        if (useTexture) texture.bind();
-        if (useShader) {
-            shader.begin();
-            shader.setUniformMatrix4f("modelMatrix", getLocalTransformMatrix());
-            if (useTexture) shader.setUniform1i("tex", 0);
-            shader.setUniform1f("white", CalibrationMesh::white);
-            shader.setUniform1f("visibility", CalibrationMesh::visibility);
-        }
-        object_mesh.drawFaces();
-        if (useShader) shader.end();
-        if (useTexture) texture.unbind();
-        ofPopStyle();
-    }
+    bool loadTexture(string filename);
+    bool loadShader(string filename);
+    void reloadShader();
+    void customDraw();
     
 	ofVboMesh object_mesh;
 	ofMesh projected_mesh;
     vector<CalibrationPoint> points;
     bool useTexture;
     ofImage texture;
-    ofColor color;
     string shader_name;
     ofShader shader;
     bool useShader;
+    float polygonOffset;
     
 private:
     friend class boost::serialization::access;

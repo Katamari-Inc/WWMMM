@@ -5,9 +5,6 @@ using namespace ofxCv;
 using namespace cv;
 
 
-float CalibrationMesh::white = 0.0f;
-float CalibrationMesh::visibility = 1.0f;
-
 ofxEasingLinear linear_easing_;
 ofxEasingCubic cubic_easing_;
 
@@ -359,6 +356,7 @@ void testApp::setupMesh() {
         ofExit(1);
     }
     ofDisableArbTex();
+    CalibrationMesh::setup();
     for (int i = 0; i < model_.getNumMeshes(); i++) {
         ofMesh m = model_.getMesh(i);
         CalibrationMesh *mesh = new CalibrationMesh(m);
@@ -380,6 +378,7 @@ void testApp::setupMesh() {
             case 3:
                 mesh->loadTexture("http-aid-dcc.png");
                 mesh->loadShader("shaders/floor");
+                mesh->polygonOffset = 1.0;
                 break;
         }
     }
