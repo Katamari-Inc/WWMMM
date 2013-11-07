@@ -125,7 +125,7 @@ void Ripple::setup() {
     shader_.load("shaders/ripple");
     color_.loadImage("color_palette.jpg");
     
-    setScale(0.5);
+//    setScale(0.5);
     setOrientation(ofVec3f(0, 90, 90));
     
     start_time_ = 0;
@@ -206,7 +206,7 @@ void Ocean::setup() {
     shader_.load("shaders/ocean");
     texture_.loadImage("colors_line_dark.png");
     
-    setPosition(0, 0, -21);
+    setPosition(0, -10, -21);
 }
 
 

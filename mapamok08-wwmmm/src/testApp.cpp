@@ -323,8 +323,8 @@ void testApp::keyPressed(int key) {
             break;
             
         case '0':
-//            ripple_.start(ofVec3f());
-            point_items_.remove(ofRandom(500));
+            ripple_.start(ofVec3f());
+//            point_items_.remove(ofRandom(500));
             break;
         case 'x':
             explodeFireworks();
