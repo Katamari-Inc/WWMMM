@@ -886,8 +886,7 @@ void testApp::explodeFireworks() {
     Fireworks *fw = new Fireworks();
     fw->setup();
     ofAddListener(fw->completed, this, &testApp::fireworksCompleted);
-    ofVec3f p = ball_.getPosition();
-    fw->start(ofVec3f(p.x + ofRandomf() * 200, root0_.getPosition().y + 250, p.z + ofRandomf() * 200));
+    fw->start(ofVec3f(ofRandomf() * 300, root0_.getPosition().y + 250, ofRandomf() * 300));
     fireworks_.push_back(fw);
 }
 
