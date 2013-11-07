@@ -1,8 +1,8 @@
 #include "testApp.h"
 
-ofxEasingLinear SmallItems::Ripple::linear_easing;
-ofxEasingCubic SmallItems::Ripple::cubic_easing;
-float SmallItems::white = 0.5;
+ofxEasingLinear PointItems::Ripple::linear_easing;
+ofxEasingCubic PointItems::Ripple::cubic_easing;
+float PointItems::white = 0.5;
 
 //--------------------------------------------------------------
 void testApp::setup() {
@@ -72,7 +72,7 @@ void testApp::setup() {
     
     ofxJSONElement result;
     result.open("http-aid-dcc.json");
-    small_items_.setup(result["small_items"]);
+    point_items_.setup(result["large_items"], result["small_items"]);
     
     random_shader_.load("bridge");
     random_texture_.loadImage("random.png");
@@ -110,6 +110,8 @@ void testApp::update() {
             ofQuaternion q(message.getArgAsFloat(0), message.getArgAsFloat(1), message.getArgAsFloat(2), message.getArgAsFloat(3));
             q.slerp(rotation_, ofQuaternion(), q);
             stage_transform_matrix_.makeRotationMatrix(q);
+        } else if (address == "/smallitem") {
+            point_items_.remove(message.getArgAsInt32(0));
         }
     }
     
@@ -178,8 +180,8 @@ void testApp::draw() {
 //    ofPopMatrix();
 //    ofPopStyle();
 
-    SmallItems::white = white_;
-    small_items_.draw();
+    PointItems::white = white_;
+    point_items_.draw();
     
 //    goal_.draw();
     
@@ -230,13 +232,17 @@ void testApp::keyPressed(int key) {
             random_shader_.unload();
             random_shader_.load("bridge");
             break;
-            
+ 
+        case 'k': {
+            point_items_.remove(ofRandom(4));
+            break;
+        }
         case 'q': {
-            small_items_.remove(ofRandom(500));
+            point_items_.remove(ofRandom(500));
             break;
         }
         case 'j': {
-            small_items_.reset();
+            point_items_.reset();
             break;
         }
     }

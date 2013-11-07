@@ -234,16 +234,16 @@ public:
 };
 
 
-class SmallItems : public ofNode {
+class PointItems : public ofNode {
     
     class Ripple : public ofNode {
         static ofxEasingLinear linear_easing;
         static ofxEasingCubic cubic_easing;
     public:
-        void setup(ofVec3f p) {
+        void setup(ofVec3f p, float delay) {
             position = p;
-            radius.setParameters(cubic_easing, ofxTween::easeOut, 0, 10, 1000, 0);
-            alpha.setParameters(linear_easing, ofxTween::easeInOut, 255, 0, 500, 500);
+            radius.setParameters(cubic_easing, ofxTween::easeOut, 0, 10, 1000, delay);
+            alpha.setParameters(linear_easing, ofxTween::easeInOut, 255, 0, 500, delay + 500);
             setPosition(p);
             setOrientation(ofVec3f(90, 0, 0));
         }
@@ -258,31 +258,56 @@ class SmallItems : public ofNode {
     
 public:
     static float white;
-    void setup(Json::Value &points) {
+    void setup(Json::Value &larges, Json::Value &smalls) {
         mesh_.setMode(OF_PRIMITIVE_POINTS);
-        ofFloatColor c(17, 195, 210);
-        c /= 255.0;
-        int n = points.size();
-        for (int i = 0; i < n; i += 3) {
+        ofFloatColor c(1.0, 1.0, 0.0);
+        num_larges_ = larges.size();
+        for (int i = 0; i < num_larges_; i += 3) {
             ofVec3f v;
-            v.x = points[i].asFloat() - 512;
-            v.z = points[i + 1].asFloat() - 679;
-            v.y = points[i + 2].asFloat() + 6;
+            v.x = larges[i].asFloat() - 512;
+            v.z = larges[i + 1].asFloat() - 679;
+            v.y = larges[i + 2].asFloat() + 6;
             v *= 0.3;
             mesh_.addVertex(v);
             mesh_.addColor(c);
         }
-        shader_.load("smallitems");
+        num_larges_ /= 3;
+
+        c.g = 0.0;
+        num_smalls_ = smalls.size();
+        for (int i = 0; i < num_smalls_; i += 3) {
+            ofVec3f v;
+            v.x = smalls[i].asFloat() - 512;
+            v.z = smalls[i + 1].asFloat() - 679;
+            v.y = smalls[i + 2].asFloat() + 6;
+            v *= 0.3;
+            mesh_.addVertex(v);
+            mesh_.addColor(c);
+        }
+
+        shader_.load("pointitems");
         setPosition(0, 20, 0);
+    }
+    
+    void removeLarge(int index) {
+        remove(index);
+    }
+    
+    void removeSmall(int index) {
+        remove(num_larges_ + index);
     }
     
     void remove(int index) {
         ofVec3f v = mesh_.getVertex(index);
         mesh_.setColor(index, ofFloatColor(0));
-        Ripple *r = new Ripple();
-        r->setup(v);
-        ofAddListener(r->radius.end_E, this, &SmallItems::rippleComplete);
-        ripples_.push_back(r);
+        
+        int n = index < num_larges_ ? 10 : 1;
+        for (int i = 0; i < n; i++) {
+            Ripple *r = new Ripple();
+            r->setup(v, i * 200);
+            ofAddListener(r->radius.end_E, this, &PointItems::rippleComplete);
+            ripples_.push_back(r);
+        }
     }
     
     void rippleComplete(int &i) {
@@ -292,10 +317,8 @@ public:
     }
     
     void reset() {
-        ofFloatColor c(17, 195, 210);
-        c /= 255.0;
         for (int i = 0; i < mesh_.getNumVertices(); i++) {
-            mesh_.setColor(i, c);
+            mesh_.setColor(i, ofFloatColor(1, i < num_larges_ ? 1 : 0, 0));
         }
     }
     
@@ -320,6 +343,8 @@ public:
     }
     
     ofMesh mesh_;
+    int num_larges_;
+    int num_smalls_;
     ofShader shader_;
     deque<Ripple*> ripples_;
 };
@@ -349,7 +374,7 @@ public:
     Ocean ocean2_;
     Ripple ripple_;
     Fireworks fireworks_;
-    SmallItems small_items_;
+    PointItems point_items_;
     ofShader random_shader_;
     ofImage random_texture_;
     

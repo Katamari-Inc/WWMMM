@@ -41,6 +41,11 @@
 		29766D19182831B6001BD749 /* ofxTween.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 29766D0B182831B6001BD749 /* ofxTween.cpp */; };
 		2986D89B181C128400F89A26 /* pystring.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 2986D899181C128400F89A26 /* pystring.cpp */; };
 		29998F81181A1A9500919A87 /* ofxProCamToolkit.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 29998F7F181A1A9500919A87 /* ofxProCamToolkit.cpp */; };
+		29B51406182B1883000C73A3 /* PointItems.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 29B51404182B1883000C73A3 /* PointItems.cpp */; };
+		29B51420182B18EE000C73A3 /* json_reader.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 29B51417182B18EE000C73A3 /* json_reader.cpp */; };
+		29B51421182B18EE000C73A3 /* json_value.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 29B51419182B18EE000C73A3 /* json_value.cpp */; };
+		29B51422182B18EE000C73A3 /* json_writer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 29B5141B182B18EE000C73A3 /* json_writer.cpp */; };
+		29B51423182B18EE000C73A3 /* ofxJSONElement.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 29B5141E182B18EE000C73A3 /* ofxJSONElement.cpp */; };
 		29C54F1A182520510026CF10 /* libboost_serialization.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 29C54F19182520510026CF10 /* libboost_serialization.a */; };
 		29DC5CF81828948000F5B951 /* Models.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 29DC5CF71828948000F5B951 /* Models.cpp */; };
 		2B11014060CFA00EA494FBC6 /* guiTypeTextDropDown.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 4F64D7DD70C6B5B1FC395DED /* guiTypeTextDropDown.cpp */; };
@@ -239,6 +244,27 @@
 		29998F7E181A1A9500919A87 /* ofxAutoControlPanel.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ofxAutoControlPanel.h; sourceTree = "<group>"; };
 		29998F7F181A1A9500919A87 /* ofxProCamToolkit.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = ofxProCamToolkit.cpp; sourceTree = "<group>"; };
 		29998F80181A1A9500919A87 /* ofxProCamToolkit.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ofxProCamToolkit.h; sourceTree = "<group>"; };
+		29B51404182B1883000C73A3 /* PointItems.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = PointItems.cpp; sourceTree = "<group>"; };
+		29B51405182B1883000C73A3 /* PointItems.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = PointItems.h; sourceTree = "<group>"; };
+		29B5140B182B18EE000C73A3 /* autolink.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = autolink.h; sourceTree = "<group>"; };
+		29B5140C182B18EE000C73A3 /* config.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = config.h; sourceTree = "<group>"; };
+		29B5140D182B18EE000C73A3 /* features.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = features.h; sourceTree = "<group>"; };
+		29B5140E182B18EE000C73A3 /* forwards.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = forwards.h; sourceTree = "<group>"; };
+		29B5140F182B18EE000C73A3 /* json.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = json.h; sourceTree = "<group>"; };
+		29B51410182B18EE000C73A3 /* reader.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = reader.h; sourceTree = "<group>"; };
+		29B51411182B18EE000C73A3 /* value.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = value.h; sourceTree = "<group>"; };
+		29B51412182B18EE000C73A3 /* writer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = writer.h; sourceTree = "<group>"; };
+		29B51414182B18EE000C73A3 /* json_batchallocator.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = json_batchallocator.h; sourceTree = "<group>"; };
+		29B51415182B18EE000C73A3 /* json_internalarray.inl */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = json_internalarray.inl; sourceTree = "<group>"; };
+		29B51416182B18EE000C73A3 /* json_internalmap.inl */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = json_internalmap.inl; sourceTree = "<group>"; };
+		29B51417182B18EE000C73A3 /* json_reader.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = json_reader.cpp; sourceTree = "<group>"; };
+		29B51418182B18EE000C73A3 /* json_tool.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = json_tool.h; sourceTree = "<group>"; };
+		29B51419182B18EE000C73A3 /* json_value.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = json_value.cpp; sourceTree = "<group>"; };
+		29B5141A182B18EE000C73A3 /* json_valueiterator.inl */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = json_valueiterator.inl; sourceTree = "<group>"; };
+		29B5141B182B18EE000C73A3 /* json_writer.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = json_writer.cpp; sourceTree = "<group>"; };
+		29B5141C182B18EE000C73A3 /* sconscript */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = sconscript; sourceTree = "<group>"; };
+		29B5141E182B18EE000C73A3 /* ofxJSONElement.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = ofxJSONElement.cpp; sourceTree = "<group>"; };
+		29B5141F182B18EE000C73A3 /* ofxJSONElement.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ofxJSONElement.h; sourceTree = "<group>"; };
 		29C54F19182520510026CF10 /* libboost_serialization.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libboost_serialization.a; path = boost/lib/libboost_serialization.a; sourceTree = "<group>"; };
 		29DC5CF71828948000F5B951 /* Models.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Models.cpp; sourceTree = "<group>"; };
 		2B40EDA85BEB63E46785BC29 /* tinyxml.cpp */ = {isa = PBXFileReference; explicitFileType = sourcecode.cpp.cpp; fileEncoding = 30; name = tinyxml.cpp; path = ../../../addons/ofxXmlSettings/libs/tinyxml.cpp; sourceTree = SOURCE_ROOT; };
@@ -766,6 +792,82 @@
 			name = ProCamToolkit;
 			sourceTree = "<group>";
 		};
+		29B51407182B18EE000C73A3 /* libs */ = {
+			isa = PBXGroup;
+			children = (
+				29B51408182B18EE000C73A3 /* jsoncpp */,
+			);
+			name = libs;
+			path = ../../../addons/ofxJSON/libs;
+			sourceTree = "<group>";
+		};
+		29B51408182B18EE000C73A3 /* jsoncpp */ = {
+			isa = PBXGroup;
+			children = (
+				29B51409182B18EE000C73A3 /* include */,
+				29B51413182B18EE000C73A3 /* src */,
+			);
+			path = jsoncpp;
+			sourceTree = "<group>";
+		};
+		29B51409182B18EE000C73A3 /* include */ = {
+			isa = PBXGroup;
+			children = (
+				29B5140A182B18EE000C73A3 /* json */,
+			);
+			path = include;
+			sourceTree = "<group>";
+		};
+		29B5140A182B18EE000C73A3 /* json */ = {
+			isa = PBXGroup;
+			children = (
+				29B5140B182B18EE000C73A3 /* autolink.h */,
+				29B5140C182B18EE000C73A3 /* config.h */,
+				29B5140D182B18EE000C73A3 /* features.h */,
+				29B5140E182B18EE000C73A3 /* forwards.h */,
+				29B5140F182B18EE000C73A3 /* json.h */,
+				29B51410182B18EE000C73A3 /* reader.h */,
+				29B51411182B18EE000C73A3 /* value.h */,
+				29B51412182B18EE000C73A3 /* writer.h */,
+			);
+			path = json;
+			sourceTree = "<group>";
+		};
+		29B51413182B18EE000C73A3 /* src */ = {
+			isa = PBXGroup;
+			children = (
+				29B51414182B18EE000C73A3 /* json_batchallocator.h */,
+				29B51415182B18EE000C73A3 /* json_internalarray.inl */,
+				29B51416182B18EE000C73A3 /* json_internalmap.inl */,
+				29B51417182B18EE000C73A3 /* json_reader.cpp */,
+				29B51418182B18EE000C73A3 /* json_tool.h */,
+				29B51419182B18EE000C73A3 /* json_value.cpp */,
+				29B5141A182B18EE000C73A3 /* json_valueiterator.inl */,
+				29B5141B182B18EE000C73A3 /* json_writer.cpp */,
+				29B5141C182B18EE000C73A3 /* sconscript */,
+			);
+			path = src;
+			sourceTree = "<group>";
+		};
+		29B5141D182B18EE000C73A3 /* src */ = {
+			isa = PBXGroup;
+			children = (
+				29B5141E182B18EE000C73A3 /* ofxJSONElement.cpp */,
+				29B5141F182B18EE000C73A3 /* ofxJSONElement.h */,
+			);
+			name = src;
+			path = ../../../addons/ofxJSON/src;
+			sourceTree = "<group>";
+		};
+		29B51424182B18F7000C73A3 /* ofxJSON */ = {
+			isa = PBXGroup;
+			children = (
+				29B51407182B18EE000C73A3 /* libs */,
+				29B5141D182B18EE000C73A3 /* src */,
+			);
+			name = ofxJSON;
+			sourceTree = "<group>";
+		};
 		2C8F245ACBE61E28646C17F2 /* ofxAssimpModelLoader */ = {
 			isa = PBXGroup;
 			children = (
@@ -1026,6 +1128,7 @@
 		BB4B014C10F69532006C3DED /* addons */ = {
 			isa = PBXGroup;
 			children = (
+				29B51424182B18F7000C73A3 /* ofxJSON */,
 				29766D1A182831BB001BD749 /* ofxTween */,
 				2937ECB2181E9DA100FD9940 /* ofxOsc */,
 				2C8F245ACBE61E28646C17F2 /* ofxAssimpModelLoader */,
@@ -1185,6 +1288,8 @@
 				296BF66C182A257B003C2A0E /* CalibrationData.cpp */,
 				29DC5CF71828948000F5B951 /* Models.cpp */,
 				290E5332182598B600D6633B /* Models.h */,
+				29B51404182B1883000C73A3 /* PointItems.cpp */,
+				29B51405182B1883000C73A3 /* PointItems.h */,
 				29998F7E181A1A9500919A87 /* ofxAutoControlPanel.h */,
 				2986D899181C128400F89A26 /* pystring.cpp */,
 				2986D89A181C128400F89A26 /* pystring.h */,
@@ -1497,6 +1602,11 @@
 				29766D19182831B6001BD749 /* ofxTween.cpp in Sources */,
 				29DC5CF81828948000F5B951 /* Models.cpp in Sources */,
 				296BF66D182A257B003C2A0E /* CalibrationData.cpp in Sources */,
+				29B51406182B1883000C73A3 /* PointItems.cpp in Sources */,
+				29B51420182B18EE000C73A3 /* json_reader.cpp in Sources */,
+				29B51421182B18EE000C73A3 /* json_value.cpp in Sources */,
+				29B51422182B18EE000C73A3 /* json_writer.cpp in Sources */,
+				29B51423182B18EE000C73A3 /* ofxJSONElement.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1730,6 +1840,7 @@
 					../../../addons/ofxCv/libs/ofxCv/src,
 					../../../addons/ofxCv/src,
 					../../../addons/ofxOsc/libs/oscpack/src,
+					../../../addons/ofxJSON/libs/jsoncpp/include,
 					boost/src,
 					/usr/local/include,
 				);
@@ -1803,6 +1914,7 @@
 					../../../addons/ofxCv/libs/ofxCv/src,
 					../../../addons/ofxCv/src,
 					../../../addons/ofxOsc/libs/oscpack/src,
+					../../../addons/ofxJSON/libs/jsoncpp/include,
 					boost/src,
 					/usr/local/include,
 				);

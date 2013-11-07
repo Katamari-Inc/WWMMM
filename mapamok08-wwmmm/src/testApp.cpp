@@ -86,6 +86,7 @@ void testApp::update() {
                 ball_.setPosition(0, 250, 0);
             } else if (world_state_ == "GAME") {
                 rotation_amount_tween_.setParameters(cubic_easing_, ofxTween::easeInOut, 0, 1, 2000, 0);
+                item_alpha_tween_.setParameters(linear_easing_, ofxTween::easeInOut, 0, 1, 2000, 0);
             } else if (world_state_ == "FALLING" || world_state_ == "FLY_AWAY") {
                 stage0_.resetTransform();
                 stage_.resetTransform();
@@ -94,6 +95,13 @@ void testApp::update() {
         } else if (address == "/ball/drop") {
             ripple_.start(ofVec3f(message.getArgAsFloat(0), message.getArgAsFloat(1), message.getArgAsFloat(2)) * 0.3);
             ball_.visible_ = false;
+        } else if (address == "/item") {
+            int index = message.getArgAsInt32(1);
+            if (message.getArgAsInt32(0)) {
+                point_items_.removeLarge(index);
+            } else {
+                point_items_.removeSmall(index);
+            }
         } else if (address == "/fireworks") {
             explodeFireworks();
         }
@@ -121,6 +129,9 @@ void testApp::update() {
     if (visibility_tween_.isRunning()) {
         CalibrationMesh::visibility = visibility_tween_.update();
         setf("visibility", CalibrationMesh::visibility);
+    }
+    if (item_alpha_tween_.isRunning()) {
+        PointItems::alpha = item_alpha_tween_.update();
     }
 
     
@@ -312,7 +323,8 @@ void testApp::keyPressed(int key) {
             break;
             
         case '0':
-            ripple_.start(ofVec3f());
+//            ripple_.start(ofVec3f());
+            point_items_.remove(ofRandom(500));
             break;
         case 'x':
             explodeFireworks();
@@ -368,8 +380,6 @@ void testApp::setupMesh() {
         }
         switch (i) {
             case 0:
-//                mesh->loadTexture("colors_line_dark.png");
-//                mesh->loadShader("shaders/ocean");
                 mesh->visible = false;
                 break;
             case 1:
@@ -395,8 +405,14 @@ void testApp::setupMesh() {
     ocean_.setup();
     ripple_.setup();
     
+    ofxJSONElement result;
+    result.open("http-aid-dcc.json");
+    point_items_.setup(result["large_items"], result["small_items"]);
+    point_items_.setParent(stage_);
+    
     white_tween_.setParameters(linear_easing_, ofxTween::easeOut, 1, 1, 0, 0);
     visibility_tween_.setParameters(linear_easing_, ofxTween::easeOut, 0, 0, 0, 0);
+    item_alpha_tween_.setParameters(linear_easing_, ofxTween::easeOut, 0, 0, 0, 0);
 }
 
 
@@ -675,6 +691,7 @@ void testApp::render() {
             for (auto it = fireworks_.begin(); it != fireworks_.end(); it++) {
                 (*it)->draw();
             }
+            point_items_.draw();
 			break;
 		case 1: // fullWireframe
             for (int i = 0; i < calibration_meshes_.size(); i++) {
@@ -856,7 +873,8 @@ void testApp::startIntro() {
 void testApp::resetToTitle() {
     white_tween_.setParameters(linear_easing_, ofxTween::easeInOut, 0, 1, 2000, 0);
     visibility_tween_.setParameters(linear_easing_, ofxTween::easeInOut, 1, 1, 0, 2000);
-    rotation_amount_tween_.setParameters(cubic_easing_, ofxTween::easeInOut, 1, 1, 0, 0);
+    rotation_amount_tween_.setParameters(linear_easing_, ofxTween::easeInOut, 1, 1, 0, 0);
+    item_alpha_tween_.setParameters(linear_easing_, ofxTween::easeInOut, 0, 0, 0, 0);
 
     motor_manager_.reset();
     stage0_.resetTransform();

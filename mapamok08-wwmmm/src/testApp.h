@@ -12,6 +12,7 @@
 #include "MotorManager.h"
 #include "CalibrationData.h"
 #include "Models.h"
+#include "PointItems.h"
 
 
 class testApp : public ofBaseApp {
@@ -66,12 +67,12 @@ public:
     ofNode stage_;
     ofImage floor_texture_;
     Ocean ocean_;
-//    ofImage ocean_texture_;
     Ball ball_;
     Goal goal_;
     Ripple ripple_;
     ofNode root0_;
     ofNode root_;
+    PointItems point_items_;
     deque<Fireworks*> fireworks_;
     
     ofQuaternion target_orientation_;
@@ -82,6 +83,7 @@ public:
     ofxTween stage_level_tween_;
     ofxTween stage_tilt_tween_;
     ofxTween rotation_amount_tween_;
+    ofxTween item_alpha_tween_;
     
     int selected_mesh_;
     int selected_point_;
