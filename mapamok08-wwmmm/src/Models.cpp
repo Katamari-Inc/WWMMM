@@ -206,7 +206,7 @@ void Ocean::setup() {
     shader_.load("shaders/ocean");
     texture_.loadImage("colors_line_dark.png");
     
-    setPosition(0, -10, -21);
+    setPosition(0, -20, -21);
 }
 
 
